@@ -16,15 +16,15 @@ dependencies mocked (LiveKit + realtime notifications).
 import uuid
 from unittest import mock
 
-import pytest
 from django.core.cache import cache
+
+import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from ...factories import RoomFactory, UserFactory
 from ...models import RoomAccessLevel
 from ...services.lobby import LobbyService
-
 
 pytestmark = pytest.mark.django_db
 

@@ -10,8 +10,6 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 
-from rest_framework.response import Response
-
 from rest_framework import decorators, mixins, pagination, throttling, viewsets
 from rest_framework import (
     exceptions as drf_exceptions,
@@ -22,6 +20,7 @@ from rest_framework import (
 from rest_framework import (
     status as drf_status,
 )
+from rest_framework.response import Response
 
 from core import enums, models, utils
 from core.recording.enums import FileExtension
