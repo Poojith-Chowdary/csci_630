@@ -4,7 +4,6 @@ Test rooms API endpoints in the Meet core app: participants management.
 
 # pylint: disable=redefined-outer-name,unused-argument,protected-access
 
-import random
 from unittest import mock
 from uuid import uuid4
 
@@ -294,8 +293,8 @@ def test_remove_participant_success_lobby_cache(mock_livekit_client):
     mock_livekit_client.aclose.assert_called()
 
     # Verify lobby cache was cleared - participant should no longer exist
-    participant = LobbyService()._get_participant(room.id, participant_identity)
-    assert participant is None
+    waiting = LobbyService().list_waiting_participants(room.id)
+    assert all(p.get("participant_identity") != participant_identity for p in waiting)
 
 
 def test_remove_participant_success(mock_livekit_client):
