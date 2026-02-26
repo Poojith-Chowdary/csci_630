@@ -12,7 +12,7 @@ and this project adheres to
 
 ### Changed
 
-- (backend) Made participant/update test suites deterministic by removing any random role selection. #9
+- 🧹(backend) Removed random role and made condition deterministic #9
 - ♿️(frontend) adjust visual-only tooltip a11y labels #910
 - ♿️(frontend) sr pin/unpin announcements with dedicated messages #898
 - ♿(frontend) adjust sr announcements for idle disconnect timer #908
@@ -20,14 +20,14 @@ and this project adheres to
 
 ### Fixed
 
-- (backend) Return 404 when attempting to remove a non-existent participant (instead of 500), and added a test for this edge case #9
+- (backend) Return 404 when attempting to remove a non-existent participant #9
 - 🔒️(frontend) fix an XSS vulnerability on the recording page #911
 
 ## [1.4.0] - 2026-01-25
 
 ### Added
 
-- (backend) Added end-to-end integration/MVC test coverage for waiting room (lobby) and participant management flows  #9
+- (backend) Added end-to-end integration tests for waiting room flows  #9
 - ✨(frontend) add configurable redirect for unauthenticated users #904
 
 ### Changed

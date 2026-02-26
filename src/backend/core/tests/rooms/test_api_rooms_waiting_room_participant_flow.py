@@ -22,6 +22,8 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from core.services.lobby import LobbyParticipantNotFound
+
 from ...factories import RoomFactory, UserFactory
 from ...models import RoomAccessLevel
 from ...services.lobby import LobbyService
@@ -306,4 +308,5 @@ def test_multiple_moderators_can_manage_waiting_room_and_remove_participants(
     mock_client.aclose.assert_called_once()
 
     # Participant state should be cleared from lobby cache.
-    assert LobbyService()._get_participant(room.id, participant_id) is None
+    with pytest.raises(LobbyParticipantNotFound):
+        LobbyService().get_participant(room.id, participant_id)
