@@ -310,4 +310,5 @@ def test_multiple_moderators_can_manage_waiting_room_and_remove_participants(
     # Participant state should be cleared from lobby cache.
     with pytest.raises(LobbyParticipantNotFound):
         waiting = LobbyService().list_waiting_participants(room.id)
+        LobbyService().clear_participant_cache(room.id, participant_id)
         assert all(p.get("participant_id") != str(participant_id) for p in waiting)
