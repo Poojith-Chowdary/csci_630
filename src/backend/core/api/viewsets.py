@@ -650,26 +650,28 @@ class RoomViewSet(
         permission_classes=[permissions.HasPrivilegesOnRoom],
     )
     def remove_participant(self, request, pk=None):  # pylint: disable=unused-argument
-        """Remove a participant from the room."""
+        """Remove a participant from a room and clear their lobby cache."""
         room = self.get_object()
 
         serializer = serializers.BaseParticipantsManagementSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        participant_identity = str(serializer.validated_data["participant_identity"])
+
         try:
             ParticipantsManagement().remove(
                 room_name=str(room.pk),
-                identity=str(serializer.validated_data["participant_identity"]),
+                identity=participant_identity,
             )
-
         except ParticipantsManagementException as exc:
             if getattr(exc, "status_code", None) == 404:
                 return Response({"error": "Participant not found"}, status=404)
             return Response({"error": "Failed to remove participant"}, status=500)
 
-        return drf_response.Response(
-            {"status": "success"}, status=drf_status.HTTP_200_OK
-        )
+        # ✅ IMPORTANT: clear lobby cache after successful removal
+        LobbyService().clear_participant_cache(room.id, participant_identity)
+
+        return Response({"status": "success"}, status=drf_status.HTTP_200_OK)
 
 
 class ResourceAccessViewSet(
