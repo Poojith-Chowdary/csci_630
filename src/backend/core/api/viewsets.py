@@ -10,6 +10,8 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 
+from rest_framework.response import Response
+
 from rest_framework import decorators, mixins, pagination, throttling, viewsets
 from rest_framework import (
     exceptions as drf_exceptions,
@@ -628,7 +630,7 @@ class RoomViewSet(
                 permission=serializer.validated_data.get("permission"),
                 name=serializer.validated_data.get("name"),
             )
-        
+
         except ParticipantsManagementException as exc:
             if getattr(exc, "status_code", None) == 404:
                 return Response({"error": "Participant not found"}, status=404)

@@ -102,7 +102,9 @@ def test_waiting_room_enabled_restricted_room_places_participant_in_waiting_room
 
     with (
         mock.patch("core.utils.generate_color", return_value="mocked-color"),
-        mock.patch("core.utils.notify_participants", return_value=None) as mocked_notify,
+        mock.patch(
+            "core.utils.notify_participants", return_value=None
+        ) as mocked_notify,
     ):
         response = client.post(
             f"/api/v1.0/rooms/{room.id}/request-entry/",

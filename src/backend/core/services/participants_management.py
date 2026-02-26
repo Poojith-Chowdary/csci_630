@@ -56,7 +56,9 @@ class ParticipantsManagement:
 
         except TwirpError as e:
             status_code = 404 if getattr(e, "status", None) == 404 else 500
-            raise ParticipantsManagementException("Could not mute participant", status_code=status_code) from e
+            raise ParticipantsManagementException(
+                "Could not mute participant", status_code=status_code
+            ) from e
 
         finally:
             await lkapi.aclose()
@@ -85,7 +87,9 @@ class ParticipantsManagement:
             )
         except TwirpError as e:
             status_code = 404 if getattr(e, "status", None) == 404 else 500
-            raise ParticipantsManagementException("Could not remove participant", status_code=status_code) from e
+            raise ParticipantsManagementException(
+                "Could not remove participant", status_code=status_code
+            ) from e
 
         finally:
             await lkapi.aclose()
@@ -118,7 +122,9 @@ class ParticipantsManagement:
 
         except TwirpError as e:
             status_code = 404 if getattr(e, "status", None) == 404 else 500
-            raise ParticipantsManagementException("Could not update participant", status_code=status_code) from e
+            raise ParticipantsManagementException(
+                "Could not update participant", status_code=status_code
+            ) from e
 
         finally:
             await lkapi.aclose()
