@@ -36,7 +36,7 @@ def test_mute_participant_success(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -73,7 +73,7 @@ def test_mute_participant_invalid_payload():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -96,7 +96,7 @@ def test_mute_participant_unexpected_twirp_error(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -117,7 +117,7 @@ def test_update_participant_success(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -172,7 +172,7 @@ def test_update_participant_invalid_payload():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -191,7 +191,7 @@ def test_update_participant_no_update_fields():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -213,7 +213,7 @@ def test_update_participant_invalid_permission():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -235,7 +235,7 @@ def test_update_participant_wrong_metadata_attributes():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -263,7 +263,7 @@ def test_update_participant_unexpected_twirp_error(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -289,7 +289,7 @@ def test_remove_participant_success_lobby_cache(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -324,7 +324,7 @@ def test_remove_participant_success(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -361,7 +361,7 @@ def test_remove_participant_invalid_payload():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -379,7 +379,7 @@ def test_remove_participant_missing_identity():
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -402,7 +402,7 @@ def test_remove_participant_unexpected_twirp_error(mock_livekit_client):
     room = RoomFactory()
     user = UserFactory()
     UserResourceAccessFactory(
-        resource=room, user=user, role=random.choice(["administrator", "owner"])
+        resource=room, user=user, role="owner"
     )
     client.force_authenticate(user=user)
 
@@ -413,5 +413,30 @@ def test_remove_participant_unexpected_twirp_error(mock_livekit_client):
 
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert response.data == {"error": "Failed to remove participant"}
+
+    mock_livekit_client.aclose.assert_called_once()
+
+def test_remove_participant_not_found_returns_404(mock_livekit_client):
+    """Edge case: removing a participant who is not in the room."""
+
+    client = APIClient()
+
+    # LiveKit can return a 404 when the participant does not exist in the room.
+    mock_livekit_client.room.remove_participant.side_effect = TwirpError(
+        msg="participant not found", code=404, status=404
+    )
+
+    room = RoomFactory()
+    user = UserFactory()
+    UserResourceAccessFactory(resource=room, user=user, role="owner")
+    client.force_authenticate(user=user)
+
+    payload = {"participant_identity": str(uuid4())}
+
+    url = reverse("rooms-remove-participant", kwargs={"pk": room.id})
+    response = client.post(url, payload, format="json")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.data == {"error": "Participant not found"}
 
     mock_livekit_client.aclose.assert_called_once()

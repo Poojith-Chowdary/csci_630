@@ -24,7 +24,15 @@ logger = getLogger(__name__)
 
 
 class ParticipantsManagementException(Exception):
-    """Exception raised when a participant management operations fail."""
+    """Exception raised when a participant management operation fails.
+
+    We attach an HTTP-ish status_code so API layer can translate common LiveKit
+    errors into meaningful responses (e.g. participant not found).
+    """
+
+    def __init__(self, message: str, *, status_code: int = 500):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 class ParticipantsManagement:
@@ -47,12 +55,8 @@ class ParticipantsManagement:
             )
 
         except TwirpError as e:
-            logger.exception(
-                "Unexpected error muting participant %s for room %s",
-                identity,
-                room_name,
-            )
-            raise ParticipantsManagementException("Could not mute participant") from e
+            status_code = 404 if getattr(e, "status", None) == 404 else 500
+            raise ParticipantsManagementException("Could not mute participant", status_code=status_code) from e
 
         finally:
             await lkapi.aclose()
@@ -80,12 +84,8 @@ class ParticipantsManagement:
                 RoomParticipantIdentity(room=room_name, identity=identity)
             )
         except TwirpError as e:
-            logger.exception(
-                "Unexpected error removing participant %s for room %s",
-                identity,
-                room_name,
-            )
-            raise ParticipantsManagementException("Could not remove participant") from e
+            status_code = 404 if getattr(e, "status", None) == 404 else 500
+            raise ParticipantsManagementException("Could not remove participant", status_code=status_code) from e
 
         finally:
             await lkapi.aclose()
@@ -117,12 +117,8 @@ class ParticipantsManagement:
             )
 
         except TwirpError as e:
-            logger.exception(
-                "Unexpected error updating participant %s for room %s",
-                identity,
-                room_name,
-            )
-            raise ParticipantsManagementException("Could not update participant") from e
+            status_code = 404 if getattr(e, "status", None) == 404 else 500
+            raise ParticipantsManagementException("Could not update participant", status_code=status_code) from e
 
         finally:
             await lkapi.aclose()
