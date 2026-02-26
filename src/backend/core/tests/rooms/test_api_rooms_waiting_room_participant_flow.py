@@ -22,11 +22,8 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.services.lobby import LobbyParticipantNotFound
-
 from ...factories import RoomFactory, UserFactory
 from ...models import RoomAccessLevel
-from ...services.lobby import LobbyService
 
 pytestmark = pytest.mark.django_db
 
