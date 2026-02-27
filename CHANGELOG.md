@@ -9,6 +9,9 @@ and this project adheres to
 ## [Unreleased]
 
 ## [1.5.0] - 2026-01-28
+### Added
+
+- 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
 
