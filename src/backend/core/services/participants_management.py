@@ -41,7 +41,6 @@ class ParticipantsManagement:
     @async_to_sync
     async def mute(self, room_name: str, identity: str, track_sid: str):
         """Mute a specific audio or video track for a participant in a room."""
-
         lkapi = utils.create_livekit_client()
 
         try:
@@ -65,8 +64,13 @@ class ParticipantsManagement:
 
     @async_to_sync
     async def remove(self, room_name: str, identity: str):
-        """Remove a participant from a room and clear their lobby cache."""
+        """Remove a participant from a room and clear their lobby cache.
 
+        LiveKit returns a TwirpError with status 404 when the participant/room
+        is not found. We propagate this as a ParticipantsManagementException
+        with status_code=404 so the API can return HTTP 404 instead of 500.
+        """
+        # Best-effort lobby cache cleanup (do not fail removal if room_name isn't a UUID)
         try:
             LobbyService().clear_participant_cache(
                 room_id=uuid.UUID(room_name), participant_id=identity
@@ -85,6 +89,7 @@ class ParticipantsManagement:
             await lkapi.room.remove_participant(
                 RoomParticipantIdentity(room=room_name, identity=identity)
             )
+
         except TwirpError as e:
             status_code = 404 if getattr(e, "status", None) == 404 else 500
             raise ParticipantsManagementException(
@@ -105,7 +110,6 @@ class ParticipantsManagement:
         name: Optional[str] = None,
     ):
         """Update participant properties such as metadata, attributes, permissions, or name."""
-
         lkapi = utils.create_livekit_client()
 
         try:
