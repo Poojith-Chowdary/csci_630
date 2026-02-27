@@ -20,6 +20,7 @@ from rest_framework import (
 from rest_framework import (
     status as drf_status,
 )
+from rest_framework.response import Response
 
 from core import enums, models, utils
 from core.recording.enums import FileExtension
@@ -592,11 +593,11 @@ class RoomViewSet(
                 identity=str(serializer.validated_data["participant_identity"]),
                 track_sid=serializer.validated_data["track_sid"],
             )
-        except ParticipantsManagementException:
-            return drf_response.Response(
-                {"error": "Failed to mute participant"},
-                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+
+        except ParticipantsManagementException as exc:
+            if getattr(exc, "status_code", None) == 404:
+                return Response({"error": "Participant not found"}, status=404)
+            return Response({"error": "Failed to mute participant"}, status=500)
 
         return drf_response.Response(
             {
@@ -628,11 +629,11 @@ class RoomViewSet(
                 permission=serializer.validated_data.get("permission"),
                 name=serializer.validated_data.get("name"),
             )
-        except ParticipantsManagementException:
-            return drf_response.Response(
-                {"error": "Failed to update participant"},
-                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+
+        except ParticipantsManagementException as exc:
+            if getattr(exc, "status_code", None) == 404:
+                return Response({"error": "Participant not found"}, status=404)
+            return Response({"error": "Failed to update participant"}, status=500)
 
         return drf_response.Response(
             {
@@ -655,16 +656,22 @@ class RoomViewSet(
         serializer = serializers.BaseParticipantsManagementSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        participant_identity = str(serializer.validated_data["participant_identity"])
+
         try:
             ParticipantsManagement().remove(
                 room_name=str(room.pk),
-                identity=str(serializer.validated_data["participant_identity"]),
+                identity=participant_identity,
             )
-        except ParticipantsManagementException:
-            return drf_response.Response(
-                {"error": "Failed to remove participant"},
-                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        except ParticipantsManagementException as exc:
+            if getattr(exc, "status_code", None) == 404:
+                return Response({"error": "Participant not found"}, status=404)
+            return Response({"error": "Failed to remove participant"}, status=500)
+
+        # ✅ IMPORTANT: clear lobby cache after successful removal
+        lobby_service = LobbyService()
+        lobby_service.clear_participant_cache(room.id, participant_identity)
+        lobby_service.clear_room_cache(room.id)
 
         return drf_response.Response(
             {"status": "success"}, status=drf_status.HTTP_200_OK
