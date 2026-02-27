@@ -130,7 +130,6 @@ sections = { meet=["core"], django=["django"] }
 [tool.ruff.lint.per-file-ignores]
 "**/tests/*" = ["S", "SLF"]
 
-[tool.pytest.ini_options]
 addopts = [
     "-v",
     "--cov-report",
