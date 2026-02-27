@@ -28,6 +28,7 @@ from sentry_sdk.integrations.logging import ignore_logger
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = path.dirname(path.dirname(path.abspath(__file__)))
+
 warnings.filterwarnings(
     "ignore",
     message=r"The FORMS_URLFIELD_ASSUME_HTTPS transitional setting is deprecated\.?",
@@ -75,7 +76,6 @@ class Base(Configuration):
     """
 
     DEBUG = False
-    FORMS_URLFIELD_ASSUME_HTTPS = True
     USE_SWAGGER = False
 
     API_VERSION = "v1.0"

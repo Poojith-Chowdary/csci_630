@@ -21,7 +21,6 @@ from rest_framework import (
 from rest_framework import (
     status as drf_status,
 )
-from rest_framework.response import Response
 
 from core import enums, models, utils
 from core.recording.enums import FileExtension
@@ -143,15 +142,14 @@ class SerializerPerActionMixin:
 class Pagination(pagination.PageNumberPagination):
     """Default pagination.
 
-    DRF's PageNumberPagination does *not* apply ordering on querysets.
-    If a view returns an unordered queryset, Django's paginator can emit
+    DRF's PageNumberPagination does *not* apply ordering by itself. If a view
+    returns an unordered queryset, Django's paginator emits an
     UnorderedObjectListWarning and pagination results may be inconsistent.
 
-    We only force a safe, stable ordering when the queryset is explicitly unordered.
+    We keep a conservative fallback: only force an ordering when the queryset
+    is explicitly unordered.
     """
 
-    # Applied only when the queryset is unordered.
-    # Many models in this project use `created_at` rather than `created_on`.
     ordering = ("-created_at", "-id")
     max_page_size = 100
     page_size_query_param = "page_size"
@@ -166,10 +164,10 @@ class Pagination(pagination.PageNumberPagination):
                 else:
                     queryset = queryset.order_by(ordering)
             except FieldError:
-                # Fall back to the primary key if the model doesn't have the expected fields.
                 queryset = queryset.order_by("pk")
 
         return super().paginate_queryset(queryset, request, view=view)
+
 
 
 class UserViewSet(
@@ -289,11 +287,7 @@ class RoomViewSet(
 
         if user.is_authenticated:
             queryset = (
-                self.filter_queryset(self.get_queryset())
-                .filter(users=user)
-                .distinct()
-                # Stable ordering for pagination consistency
-                .order_by("name", "id")
+                self.filter_queryset(self.get_queryset()).filter(users=user).distinct()
             )
         else:
             queryset = self.get_queryset().none()
@@ -622,11 +616,11 @@ class RoomViewSet(
                 identity=str(serializer.validated_data["participant_identity"]),
                 track_sid=serializer.validated_data["track_sid"],
             )
-
-        except ParticipantsManagementException as exc:
-            if getattr(exc, "status_code", None) == 404:
-                return Response({"error": "Participant not found"}, status=404)
-            return Response({"error": "Failed to mute participant"}, status=500)
+        except ParticipantsManagementException:
+            return drf_response.Response(
+                {"error": "Failed to mute participant"},
+                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return drf_response.Response(
             {
@@ -658,11 +652,11 @@ class RoomViewSet(
                 permission=serializer.validated_data.get("permission"),
                 name=serializer.validated_data.get("name"),
             )
-
-        except ParticipantsManagementException as exc:
-            if getattr(exc, "status_code", None) == 404:
-                return Response({"error": "Participant not found"}, status=404)
-            return Response({"error": "Failed to update participant"}, status=500)
+        except ParticipantsManagementException:
+            return drf_response.Response(
+                {"error": "Failed to update participant"},
+                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return drf_response.Response(
             {
@@ -685,22 +679,16 @@ class RoomViewSet(
         serializer = serializers.BaseParticipantsManagementSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        participant_identity = str(serializer.validated_data["participant_identity"])
-
         try:
             ParticipantsManagement().remove(
                 room_name=str(room.pk),
-                identity=participant_identity,
+                identity=str(serializer.validated_data["participant_identity"]),
             )
-        except ParticipantsManagementException as exc:
-            if getattr(exc, "status_code", None) == 404:
-                return Response({"error": "Participant not found"}, status=404)
-            return Response({"error": "Failed to remove participant"}, status=500)
-
-        # ✅ IMPORTANT: clear lobby cache after successful removal
-        lobby_service = LobbyService()
-        lobby_service.clear_participant_cache(room.id, participant_identity)
-        lobby_service.clear_room_cache(room.id)
+        except ParticipantsManagementException:
+            return drf_response.Response(
+                {"error": "Failed to remove participant"},
+                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return drf_response.Response(
             {"status": "success"}, status=drf_status.HTTP_200_OK
@@ -738,10 +726,7 @@ class ResourceAccessViewSet(
                     models.RoleChoices.ADMIN,
                     models.RoleChoices.OWNER,
                 ],
-            ).distinct()
-
-            # Stable ordering for pagination consistency
-            queryset = queryset.order_by("-created_at", "-id")
+            ).distinct().order_by("-created_at", "-id")
 
         return queryset
 
@@ -769,7 +754,6 @@ class RecordingViewSet(
             .get_queryset()
             .filter(Q(accesses__user=user) | Q(accesses__team__in=user.get_teams()))
             .distinct()
-            # Stable ordering for pagination consistency
             .order_by("-updated_at", "-created_at", "-id")
         )
 
