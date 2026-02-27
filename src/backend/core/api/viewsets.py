@@ -165,7 +165,6 @@ class Pagination(pagination.PageNumberPagination):
                     queryset = queryset.order_by(ordering)
             except FieldError:
                 queryset = queryset.order_by("pk")
-
         return super().paginate_queryset(queryset, request, view=view)
 
 
@@ -615,7 +614,15 @@ class RoomViewSet(
                 identity=str(serializer.validated_data["participant_identity"]),
                 track_sid=serializer.validated_data["track_sid"],
             )
-        except ParticipantsManagementException:
+        except ParticipantsManagementException as exc:
+            status_code = getattr(
+                exc, "status_code", drf_status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            if status_code == drf_status.HTTP_404_NOT_FOUND:
+                return drf_response.Response(
+                    {"message": "Participant not found."},
+                    status=drf_status.HTTP_404_NOT_FOUND,
+                )
             return drf_response.Response(
                 {"error": "Failed to mute participant"},
                 status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -651,7 +658,15 @@ class RoomViewSet(
                 permission=serializer.validated_data.get("permission"),
                 name=serializer.validated_data.get("name"),
             )
-        except ParticipantsManagementException:
+        except ParticipantsManagementException as exc:
+            status_code = getattr(
+                exc, "status_code", drf_status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            if status_code == drf_status.HTTP_404_NOT_FOUND:
+                return drf_response.Response(
+                    {"error": "Participant not found"},
+                    status=drf_status.HTTP_404_NOT_FOUND,
+                )
             return drf_response.Response(
                 {"error": "Failed to update participant"},
                 status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -683,7 +698,15 @@ class RoomViewSet(
                 room_name=str(room.pk),
                 identity=str(serializer.validated_data["participant_identity"]),
             )
-        except ParticipantsManagementException:
+        except ParticipantsManagementException as exc:
+            status_code = getattr(
+                exc, "status_code", drf_status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            if status_code == drf_status.HTTP_404_NOT_FOUND:
+                return drf_response.Response(
+                    {"error": "Participant not found"},
+                    status=drf_status.HTTP_404_NOT_FOUND,
+                )
             return drf_response.Response(
                 {"error": "Failed to remove participant"},
                 status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -719,17 +742,13 @@ class ResourceAccessViewSet(
         # permissions for or administrative privileges over.
         if self.action == "list":
             user = self.request.user
-            queryset = (
-                queryset.filter(
-                    Q(resource__accesses__user=user),
-                    resource__accesses__role__in=[
-                        models.RoleChoices.ADMIN,
-                        models.RoleChoices.OWNER,
-                    ],
-                )
-                .distinct()
-                .order_by("-created_at", "-id")
-            )
+            queryset = queryset.filter(
+                Q(resource__accesses__user=user),
+                resource__accesses__role__in=[
+                    models.RoleChoices.ADMIN,
+                    models.RoleChoices.OWNER,
+                ],
+            ).distinct()
 
         return queryset
 
@@ -756,8 +775,6 @@ class RecordingViewSet(
             super()
             .get_queryset()
             .filter(Q(accesses__user=user) | Q(accesses__team__in=user.get_teams()))
-            .distinct()
-            .order_by("-updated_at", "-created_at", "-id")
         )
 
     @decorators.action(
