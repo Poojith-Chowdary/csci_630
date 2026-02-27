@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ brandname }} – Video call invitation</title>
+  </head>
+  <body>
+    <p>
+      <img src="{{ logo_img }}" alt="{{ brandname }}" style="max-height: 40px" />
+    </p>
+
+    <p><strong>{{ inviter_first_name }} has invited you</strong> to join a video call.</p>
+
+    <p>
+      Join the room:
+      <a href="{{ room_url }}">{{ room_url }}</a>
+    </p>
+
+    <p>
+      If you need help, contact
+      <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+    </p>
+  </body>
+</html>

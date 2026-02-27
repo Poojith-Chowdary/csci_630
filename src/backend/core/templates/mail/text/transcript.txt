@@ -1,0 +1,12 @@
+{{ brandname }}
+Logo: {{ logo_img }}
+
+Your transcript is ready.
+
+Download link: {{ download_link }}
+Size: {{ file_size }}
+
+This link expires on: {{ expiration_date }}
+
+Thanks,
+{{ brandname }}

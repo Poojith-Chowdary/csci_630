@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% trans "Recording ready" %}</title>
+  </head>
+  <body>
+    <div>
+      <strong>{{ brand }}</strong><br />
+      {% if logo %}Logo: {{ logo }}<br />{% endif %}
+    </div>
+
+    <hr />
+
+    <h2>{% trans "Your recording is ready." %}</h2>
+
+    <p>{% trans "Room" %}: {{ room_name }}</p>
+    <p>{% trans "Date" %}: {{ recording_date }}</p>
+    <p>{% trans "Time" %}: {{ recording_time }}</p>
+
+    <p>
+      {% trans "Download link" %}: <a href="{{ link }}">{{ link }}</a>
+    </p>
+
+    <p>{% trans "Size" %}: {{ recording_size|default:"" }}</p>
+
+    {% if recording_expiration_days %}
+      <p>
+        {% blocktrans %}This link expires on: {{ recording_expiration_days }} days{% endblocktrans %}
+      </p>
+    {% endif %}
+
+    <hr />
+
+    <p>{% trans "If you need help, contact" %} {{ support_email }}</p>
+
+    <p>
+      {% trans "Thanks," %}<br />
+      {{ brand }}
+    </p>
+  </body>
+</html>
