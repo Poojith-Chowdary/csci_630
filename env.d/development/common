@@ -1,0 +1,78 @@
+# Django
+DJANGO_ALLOWED_HOSTS=*
+DJANGO_SECRET_KEY=ThisIsAnExampleKeyForDevPurposeOnly
+DJANGO_SETTINGS_MODULE=meet.settings
+DJANGO_SUPERUSER_PASSWORD=admin
+
+# Python
+PYTHONPATH=/app
+
+# Meet settings
+
+# Mail
+DJANGO_EMAIL_HOST="mailcatcher"
+DJANGO_EMAIL_PORT=1025
+DJANGO_EMAIL_BRAND_NAME=La Suite Numérique
+DJANGO_EMAIL_SUPPORT_EMAIL=test@yopmail.com
+DJANGO_EMAIL_LOGO_IMG=http://localhost:3000/assets/logo-suite-numerique.png
+DJANGO_EMAIL_DOMAIN=localhost:3000
+DJANGO_EMAIL_APP_BASE_URL=http://localhost:3000
+
+# Backend url
+MEET_BASE_URL="http://localhost:8072"
+
+# Media
+STORAGES_STATICFILES_BACKEND=django.contrib.staticfiles.storage.StaticFilesStorage
+AWS_S3_ENDPOINT_URL=http://minio:9000
+AWS_S3_ACCESS_KEY_ID=meet
+AWS_S3_SECRET_ACCESS_KEY=password
+
+# OIDC
+OIDC_OP_JWKS_ENDPOINT=http://nginx:8083/realms/meet/protocol/openid-connect/certs
+OIDC_OP_AUTHORIZATION_ENDPOINT=http://localhost:8083/realms/meet/protocol/openid-connect/auth
+OIDC_OP_TOKEN_ENDPOINT=http://nginx:8083/realms/meet/protocol/openid-connect/token
+OIDC_OP_USER_ENDPOINT=http://nginx:8083/realms/meet/protocol/openid-connect/userinfo
+OIDC_OP_INTROSPECTION_ENDPOINT=http://nginx:8083/realms/meet/protocol/openid-connect/token/introspect
+OIDC_OP_URL=http://localhost:8083/realms/meet
+
+OIDC_RP_CLIENT_ID=meet
+OIDC_RP_CLIENT_SECRET=ThisIsAnExampleKeyForDevPurposeOnly
+OIDC_RP_SIGN_ALGO=RS256
+OIDC_RP_SCOPES="openid email"
+
+LOGIN_REDIRECT_URL=http://localhost:3000
+LOGIN_REDIRECT_URL_FAILURE=http://localhost:3000
+LOGOUT_REDIRECT_URL=http://localhost:3000
+
+OIDC_REDIRECT_ALLOWED_HOSTS=localhost:8083,localhost:3000
+OIDC_AUTH_REQUEST_EXTRA_PARAMS={"acr_values": "eidas1"}
+
+OIDC_RS_CLIENT_ID=meet
+OIDC_RS_CLIENT_SECRET=ThisIsAnExampleKeyForDevPurposeOnly
+
+# Livekit Token settings
+LIVEKIT_API_SECRET=secret
+LIVEKIT_API_KEY=devkey
+LIVEKIT_API_URL=http://127.0.0.1.nip.io:7880
+LIVEKIT_VERIFY_SSL=False
+ALLOW_UNREGISTERED_ROOMS=False
+
+# Recording
+RECORDING_ENABLE=True
+RECORDING_STORAGE_EVENT_ENABLE=True
+RECORDING_STORAGE_EVENT_TOKEN=password
+SUMMARY_SERVICE_ENDPOINT=http://app-summary-dev:8000/api/v1/tasks/
+SUMMARY_SERVICE_API_TOKEN=password
+RECORDING_DOWNLOAD_BASE_URL=http://localhost:3000/recording
+
+# Telephony
+ROOM_TELEPHONY_ENABLED=True
+
+FRONTEND_USE_FRENCH_GOV_FOOTER=False
+FRONTEND_USE_PROCONNECT_BUTTON=False
+
+# External Applications
+EXTERNAL_API_ENABLED=True
+APPLICATION_JWT_AUDIENCE=http://localhost:8071/external-api/v1.0/
+APPLICATION_JWT_SECRET_KEY=devKey
+APPLICATION_BASE_URL=http://localhost:3000
