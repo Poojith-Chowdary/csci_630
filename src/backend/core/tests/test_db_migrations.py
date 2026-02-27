@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring,invalid-name
 import os
 
 from django.apps import apps
