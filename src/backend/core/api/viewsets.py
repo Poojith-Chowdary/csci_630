@@ -5,6 +5,7 @@ from logging import getLogger
 from urllib.parse import urlparse
 
 from django.conf import settings
+from django.core.exceptions import FieldError
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -140,11 +141,35 @@ class SerializerPerActionMixin:
 
 
 class Pagination(pagination.PageNumberPagination):
-    """Pagination to display no more than 100 objects per page sorted by creation date."""
+    """Default pagination.
 
-    ordering = "-created_on"
+    DRF's PageNumberPagination does *not* apply ordering on querysets.
+    If a view returns an unordered queryset, Django's paginator can emit
+    UnorderedObjectListWarning and pagination results may be inconsistent.
+
+    We only force a safe, stable ordering when the queryset is explicitly unordered.
+    """
+
+    # Applied only when the queryset is unordered.
+    # Many models in this project use `created_at` rather than `created_on`.
+    ordering = ("-created_at", "-id")
     max_page_size = 100
     page_size_query_param = "page_size"
+
+    def paginate_queryset(self, queryset, request, view=None):
+        """Order unordered querysets to avoid UnorderedObjectListWarning."""
+        if hasattr(queryset, "ordered") and not queryset.ordered:
+            ordering = getattr(view, "pagination_ordering", None) or self.ordering
+            try:
+                if isinstance(ordering, (list, tuple)):
+                    queryset = queryset.order_by(*ordering)
+                else:
+                    queryset = queryset.order_by(ordering)
+            except FieldError:
+                # Fall back to the primary key if the model doesn't have the expected fields.
+                queryset = queryset.order_by("pk")
+
+        return super().paginate_queryset(queryset, request, view=view)
 
 
 class UserViewSet(
@@ -264,7 +289,11 @@ class RoomViewSet(
 
         if user.is_authenticated:
             queryset = (
-                self.filter_queryset(self.get_queryset()).filter(users=user).distinct()
+                self.filter_queryset(self.get_queryset())
+                .filter(users=user)
+                .distinct()
+                # Stable ordering for pagination consistency
+                .order_by("name", "id")
             )
         else:
             queryset = self.get_queryset().none()
@@ -711,6 +740,9 @@ class ResourceAccessViewSet(
                 ],
             ).distinct()
 
+            # Stable ordering for pagination consistency
+            queryset = queryset.order_by("-created_at", "-id")
+
         return queryset
 
 
@@ -736,6 +768,9 @@ class RecordingViewSet(
             super()
             .get_queryset()
             .filter(Q(accesses__user=user) | Q(accesses__team__in=user.get_teams()))
+            .distinct()
+            # Stable ordering for pagination consistency
+            .order_by("-updated_at", "-created_at", "-id")
         )
 
     @decorators.action(
