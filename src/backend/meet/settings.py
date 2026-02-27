@@ -17,8 +17,8 @@ import warnings
 from os import path
 from socket import gethostbyname, gethostname
 
-from django.utils.translation import gettext_lazy as _
 from django.utils.deprecation import RemovedInDjango60Warning
+from django.utils.translation import gettext_lazy as _
 
 import sentry_sdk
 from configurations import Configuration, values

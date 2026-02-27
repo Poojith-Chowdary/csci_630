@@ -47,6 +47,8 @@ class ResourceFactory(factory.django.DjangoModelFactory):
                 UserResourceAccessFactory(resource=self, user=item)
             else:
                 UserResourceAccessFactory(resource=self, user=item[0], role=item[1])
+
+
 class UserResourceAccessFactory(factory.django.DjangoModelFactory):
     """Create fake resource user accesses for testing."""
 
@@ -94,6 +96,8 @@ class RecordingFactory(factory.django.DjangoModelFactory):
                 UserRecordingAccessFactory(recording=self, user=item)
             else:
                 UserRecordingAccessFactory(recording=self, user=item[0], role=item[1])
+
+
 class UserRecordingAccessFactory(factory.django.DjangoModelFactory):
     """Create fake recording user accesses for testing."""
 

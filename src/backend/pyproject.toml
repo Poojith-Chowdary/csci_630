@@ -130,6 +130,7 @@ sections = { meet=["core"], django=["django"] }
 [tool.ruff.lint.per-file-ignores]
 "**/tests/*" = ["S", "SLF"]
 
+[tool.pytest.ini_options]
 addopts = [
     "-v",
     "--cov-report",
@@ -145,8 +146,6 @@ python_files = [
 DJANGO_SETTINGS_MODULE = "meet.settings"
 DJANGO_CONFIGURATION = "Test"
 
-
-[tool.pytest.ini_options]
 filterwarnings = [
     "ignore:The FORMS_URLFIELD_ASSUME_HTTPS transitional setting is deprecated:django.utils.deprecation.RemovedInDjango60Warning",
     "error::DeprecationWarning",

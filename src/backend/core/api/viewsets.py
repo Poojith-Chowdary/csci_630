@@ -169,7 +169,6 @@ class Pagination(pagination.PageNumberPagination):
         return super().paginate_queryset(queryset, request, view=view)
 
 
-
 class UserViewSet(
     mixins.UpdateModelMixin, viewsets.GenericViewSet, mixins.ListModelMixin
 ):
@@ -720,13 +719,17 @@ class ResourceAccessViewSet(
         # permissions for or administrative privileges over.
         if self.action == "list":
             user = self.request.user
-            queryset = queryset.filter(
-                Q(resource__accesses__user=user),
-                resource__accesses__role__in=[
-                    models.RoleChoices.ADMIN,
-                    models.RoleChoices.OWNER,
-                ],
-            ).distinct().order_by("-created_at", "-id")
+            queryset = (
+                queryset.filter(
+                    Q(resource__accesses__user=user),
+                    resource__accesses__role__in=[
+                        models.RoleChoices.ADMIN,
+                        models.RoleChoices.OWNER,
+                    ],
+                )
+                .distinct()
+                .order_by("-created_at", "-id")
+            )
 
         return queryset
 
