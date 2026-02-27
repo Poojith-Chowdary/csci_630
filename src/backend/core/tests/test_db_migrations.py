@@ -1,8 +1,10 @@
 import os
-import pytest
+
 from django.apps import apps
-from django.db import connection
 from django.conf import settings
+from django.db import connection
+
+import pytest
 
 
 @pytest.mark.django_db
@@ -26,10 +28,7 @@ def test_db_schema_has_core_tables_and_core_has_migration_files():
 
     # If core explicitly set to None, migrations disabled
     if "core" in migration_modules and migration_modules["core"] is None:
-        pytest.fail(
-            "Migrations disabled for core app. "
-            "Remove --nomigrations."
-        )
+        pytest.fail("Migrations disabled for core app. Remove --nomigrations.")
 
     # Ensure migration files exist on disk
     core_app = apps.get_app_config("core")
@@ -38,7 +37,8 @@ def test_db_schema_has_core_tables_and_core_has_migration_files():
     assert os.path.isdir(migrations_dir), "Missing core/migrations directory"
 
     migration_files = [
-        f for f in os.listdir(migrations_dir)
+        f
+        for f in os.listdir(migrations_dir)
         if f.endswith(".py") and f != "__init__.py"
     ]
 
