@@ -11,6 +11,7 @@ and this project adheres to
 ## [1.5.0] - 2026-01-28
 ### Added
 
+- 🔒️(tests) Add API tests for auth behavior #7
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
