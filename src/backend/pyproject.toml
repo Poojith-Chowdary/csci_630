@@ -23,7 +23,7 @@ description = "A simple video and phone conferencing tool, powered by LiveKit"
 keywords = ["Django", "Contacts", "Templates", "RBAC"]
 license = { file = "LICENSE" }
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11,<4.0"
 dependencies = [
     "boto3==1.40.69",
     "Brotli==1.2.0",
