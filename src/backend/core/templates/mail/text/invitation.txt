@@ -1,0 +1,10 @@
+{{ brandname }}
+Logo: {{ logo_img }}
+Support: {{ support_email }}
+
+Video call in progress.
+
+Join using the Meet app: {{ room_url }}
+Direct room link: {{ room_link }}
+
+If you have questions, contact {{ support_email }}.

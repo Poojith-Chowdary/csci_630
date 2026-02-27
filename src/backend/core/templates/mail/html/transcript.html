@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ brandname }} – Transcript ready</title>
+  </head>
+  <body>
+    <p>
+      <img src="{{ logo_img }}" alt="{{ brandname }}" style="max-height: 40px" />
+    </p>
+
+    <h2>Your transcript is ready</h2>
+
+    <p>
+      Download: <a href="{{ download_link }}">{{ download_link }}</a>
+    </p>
+    <p>Size: {{ file_size }}</p>
+    <p>This link expires on: {{ expiration_date }}</p>
+  </body>
+</html>

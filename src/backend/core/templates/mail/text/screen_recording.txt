@@ -1,0 +1,20 @@
+{{ brand }}
+{% if logo %}Logo: {{ logo }}{% endif %}
+
+{% blocktrans %}Your recording is ready.{% endblocktrans %}
+
+Room: {{ room_name }}
+Date: {{ recording_date }}
+Time: {{ recording_time }}
+
+Download link: {{ link }}
+Size: {{ recording_size|default:"" }}
+
+{% if recording_expiration_days %}
+This link expires on: {{ recording_expiration_days }} days
+{% endif %}
+
+If you need help, contact {{ support_email }}
+
+Thanks,
+{{ brand }}
