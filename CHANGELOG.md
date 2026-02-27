@@ -20,6 +20,7 @@ and this project adheres to
 
 ### Fixed
 
+- 🔒️(tests) resolved the initial flaky tests #1
 - 🔒️(tests) clean up deprecations #4
 - (backend) Return 404 when attempting to remove a non-existent participant #9
 - 🔒️(frontend) fix an XSS vulnerability on the recording page #911
