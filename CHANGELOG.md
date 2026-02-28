@@ -10,7 +10,7 @@ and this project adheres to
 
 ## [1.5.0] - 2026-01-28
 ### Added
-
+- ♿️(frontend) Stabilize language switching e2e and html lang #8
 - 🔒️(tests) Add API tests for auth behavior #7
 - 🔒️(tests) Add migration/schema safety regression test #5
 
