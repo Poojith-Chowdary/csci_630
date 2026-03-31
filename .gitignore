@@ -82,3 +82,8 @@ docker/livekit/out
 
 # LiveKit CA configuration
 docker/livekit/rootCA.pem
+"after.yaml" 
+"before.yaml" 
+"commitmsg.txt" 
+"test_emoji.py" 
+"80" 
