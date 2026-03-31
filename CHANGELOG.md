@@ -7,7 +7,9 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+- Deduplicated posthog ingress version and backend logic via
+  named helpers in `_helpers.tpl` (issue #24)
+  
 ### Changed
 - Consolidate duplicate log formatting in `bin/prepare-release.sh` 
  into a single `print_msg` helper (SonarQube smell fix)
