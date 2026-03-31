@@ -4,10 +4,8 @@ import { HStack } from "@/styled-system/jsx";
 import { useTranslation } from "react-i18next";
 
 const ensureStringArray = (value: unknown): string[] => {
-  if (Array.isArray(value)) {
-    return value.filter((v): v is string => typeof v === "string");
-  }
-  return [];
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string");
 };
 
 // Stable, deterministic key generator (no external deps).
@@ -23,11 +21,11 @@ export const TermsOfServiceRoute = () => {
   const { t } = useTranslation("termsOfService");
 
   const section75Content = t("articles.article7.sections.section5.content");
-  const section75Before = section75Content
-    .split("https://github.com/suitenumerique/meet")[0]
-    .replace("https://github.com/suitenumerique/meet", "");
-  const section75After =
-    section75Content.split("https://github.com/suitenumerique/meet")[1] ?? "";
+  const section75Parts = section75Content.split(
+    "https://github.com/suitenumerique/meet"
+  );
+  const section75Before = section75Parts[0] ?? "";
+  const section75After = section75Parts[1] ?? "";
 
   const s51Capabilities = ensureStringArray(
     t("articles.article5.sections.section1.capabilities", {
