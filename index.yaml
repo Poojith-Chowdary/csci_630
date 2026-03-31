@@ -1,0 +1,12 @@
+apiVersion: v1
+entries:
+  meet:
+  - apiVersion: v2
+    created: "2026-03-31T03:53:37.806319867Z"
+    digest: 3b9f68fab6fe6eb632ddc50e08b0c29a70f9c0e8c5f5eeda5754e9510f309b81
+    name: meet
+    type: application
+    urls:
+    - https://Poojith-Chowdary.github.io/csci_630/meet-0.0.15.tgz
+    version: 0.0.15
+generated: "2026-03-31T03:53:37.804502911Z"
