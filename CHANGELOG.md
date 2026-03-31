@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+- Consolidate duplicate log formatting in `bin/prepare-release.sh` 
+ into a single `print_msg` helper (SonarQube smell fix)
 ## [1.5.0] - 2026-01-28
 ### Added
 - ♿️(frontend) Stabilize language switching e2e and html lang #8
