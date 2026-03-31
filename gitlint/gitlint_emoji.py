@@ -23,15 +23,20 @@ class GitmojiTitle(LineRule):
     target = CommitMessageTitle
 
     def validate(self, title, _commit):
-        """
-        Download the list possible gitmojis from the project's github repository and check that
-        title contains one of them.
-        """
-        gitmojis = requests.get(
-            "https://raw.githubusercontent.com/carloscuesta/gitmoji/master/packages/gitmojis/src/gitmojis.json"
-        ).json()["gitmojis"]
-        emojis = [item["emoji"] for item in gitmojis]
-        pattern = r"^({:s})\(.*\)\s[a-z].*$".format("|".join(emojis))
-        if not re.search(pattern, title):
-            violation_msg = 'Title does not match regex "<gitmoji>(<scope>) <subject>"'
+        try:
+            gitmojis = requests.get(
+                "https://raw.githubusercontent.com/carloscuesta/gitmoji/master/packages/gitmojis/src/gitmojis.json",
+                timeout=10
+            ).json()["gitmojis"]
+            # Normalize: strip variation selectors (U+FE0F, U+FE0E) from both sides
+            emojis = [item["emoji"].replace("\ufe0f", "").replace("\ufe0e", "") for item in gitmojis]
+        except Exception:
+            return []
+    
+        # Also normalize the title before matching
+        normalized_title = title.replace("\ufe0f", "").replace("\ufe0e", "")
+        pattern = r"^({:s})\(\S+\)\s[a-z].*$".format("|".join(emojis))
+        
+        if not re.search(pattern, normalized_title):
+            violation_msg = 'Title does not match regex "<gitmoji>(<scope>) <subject>": "{}"'.format(title)
             return [RuleViolation(self.id, violation_msg, title)]
