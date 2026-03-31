@@ -11,6 +11,11 @@ and this project adheres to
 ### Changed
 - Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
   into a reusable named template via `range` loop (issue #22)
+- Consolidate duplicate log formatting in `bin/prepare-release.sh` 
+ into a single `print_msg` helper (SonarQube smell fix)
+
+- Use Kubernetes Secret for MinIO credentials in minio.yaml
+
 ## [1.5.0] - 2026-01-28
 ### Added
 - ♿️(frontend) Stabilize language switching e2e and html lang #8
