@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Use Kubernetes Secret for MinIO credentials in minio.yaml
+
 ## [1.5.0] - 2026-01-28
 ### Added
 - ♿️(frontend) Stabilize language switching e2e and html lang #8
