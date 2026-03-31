@@ -11,6 +11,8 @@ and this project adheres to
 ### Changed
 - Refactored duplicate `ClusterSecretStore` blocks in `src/helm/extra/templates/clustersecretstore.yaml` into a reusable named template via `range` loop (issue #22)
 
+- Use Kubernetes Secret for MinIO credentials in minio.yaml
+
 ## [1.5.0] - 2026-01-28
 ### Added
 - ♿️(frontend) Stabilize language switching e2e and html lang #8
@@ -19,6 +21,7 @@ and this project adheres to
 
 ### Changed
 
+- 🧹(backend) Made role selection deterministic #18
 - 🧹(backend) Removed random role and made condition deterministic #9
 - ♿️(frontend) adjust visual-only tooltip a11y labels #910
 - ♿️(frontend) sr pin/unpin announcements with dedicated messages #898
