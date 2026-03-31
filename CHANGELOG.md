@@ -7,6 +7,8 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Deduplicated ingress admin version and backend logic via
+  named helpers in `_helpers.tpl` (issue #23)
 
 ### Changed
 - Consolidate duplicate log formatting in `bin/prepare-release.sh` 

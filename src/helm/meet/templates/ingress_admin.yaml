@@ -1,17 +1,12 @@
 {{- if .Values.ingressAdmin.enabled -}}
 {{- $fullName := include "meet.fullname" . -}}
-{{- if and .Values.ingressAdmin.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+{{- $kubeVersion := .Capabilities.KubeVersion.GitVersion -}}
+{{- if and .Values.ingressAdmin.className (not (semverCompare ">=1.18-0" $kubeVersion)) }}
   {{- if not (hasKey .Values.ingressAdmin.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingressAdmin.annotations "kubernetes.io/ingress.class" .Values.ingressAdmin.className}}
   {{- end }}
 {{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
+apiVersion: {{ include "meet.ingress.apiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}-admin
@@ -23,7 +18,7 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.ingressAdmin.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  {{- if and .Values.ingressAdmin.className (semverCompare ">=1.18-0" $kubeVersion) }}
   ingressClassName: {{ .Values.ingressAdmin.className }}
   {{- end }}
   {{- if .Values.ingressAdmin.tls.enabled }}
@@ -47,36 +42,22 @@ spec:
     - host: {{ .Values.ingressAdmin.host | quote }}
       http:
         paths:
+          {{- $backendArgs := dict "svcName" (include "meet.backend.fullname" .) "svcPort" .Values.backend.service.port "cap" .Capabilities }}
           - path: {{ .Values.ingressAdmin.path | quote }}
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if semverCompare ">=1.18-0" $kubeVersion }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
-              service:
-                name: {{ include "meet.backend.fullname" . }}
-                port:
-                  number: {{ .Values.backend.service.port }}
-              {{- else }}
-              serviceName: {{ include "meet.backend.fullname" . }}
-              servicePort: {{ .Values.backend.service.port }}
-            {{- end }}
+              {{- include "meet.ingress.backend" $backendArgs | nindent 14 }}
           - path: /static
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if semverCompare ">=1.18-0" $kubeVersion }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
-              service:
-                name: {{ include "meet.backend.fullname" . }}
-                port:
-                  number: {{ .Values.backend.service.port }}
-              {{- else }}
-              serviceName: {{ include "meet.backend.fullname" . }}
-              servicePort: {{ .Values.backend.service.port }}
-            {{- end }}
+              {{- include "meet.ingress.backend" $backendArgs | nindent 14 }}
     {{- end }}
     {{- range .Values.ingressAdmin.hosts }}
+    {{- $backendArgs := dict "svcName" (include "meet.backend.fullname" $) "svcPort" $.Values.backend.service.port "cap" $.Capabilities }}
     - host: {{ . | quote }}
       http:
         paths:
@@ -85,15 +66,6 @@ spec:
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
-              service:
-                name: {{ include "meet.backend.fullname" $ }}
-                port:
-                  number: {{ $.Values.backend.service.port }}
-              {{- else }}
-              serviceName: {{ include "meet.backend.fullname" $ }}
-              servicePort: {{ $.Values.backend.service.port }}
-            {{- end }}
+              {{- include "meet.ingress.backend" $backendArgs | nindent 14 }}
     {{- end }}
 {{- end }}
-
