@@ -1,17 +1,27 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "meet.fullname" . -}}
-{{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+
+{{- /* Centralize kube version checks */ -}}
+{{- $gitVersion := .Capabilities.KubeVersion.GitVersion -}}
+{{- $isV19 := semverCompare ">=1.19-0" $gitVersion -}}
+{{- $isV18 := semverCompare ">=1.18-0" $gitVersion -}}
+{{- $isV14 := semverCompare ">=1.14-0" $gitVersion -}}
+
+{{- /* Select ingress apiVersion once */ -}}
+{{- $ingressApiVersion := "extensions/v1beta1" -}}
+{{- if $isV19 -}}
+{{- $ingressApiVersion = "networking.k8s.io/v1" -}}
+{{- else if $isV14 -}}
+{{- $ingressApiVersion = "networking.k8s.io/v1beta1" -}}
+{{- end -}}
+
+{{- if and .Values.ingress.className (not $isV18) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className }}
   {{- end }}
 {{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
+
+apiVersion: {{ $ingressApiVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -23,9 +33,10 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  {{- if and .Values.ingress.className $isV18 }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
+
   {{- if .Values.ingress.tls.enabled }}
   tls:
     {{- if .Values.ingress.host }}
@@ -41,17 +52,18 @@ spec:
       secretName: {{ .secretName }}
     {{- end }}
   {{- end }}
+
   rules:
     {{- if .Values.ingress.host }}
     - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
           - path: {{ .Values.ingress.path | quote }}
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if $isV18 }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $isV19 }}
               service:
                 name: {{ include "meet.frontend.fullname" . }}
                 port:
@@ -59,13 +71,14 @@ spec:
               {{- else }}
               serviceName: {{ include "meet.frontend.fullname" . }}
               servicePort: {{ .Values.frontend.service.port }}
-            {{- end }}
+              {{- end }}
+
           - path: /api/
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if $isV18 }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $isV19 }}
               service:
                 name: {{ include "meet.backend.fullname" . }}
                 port:
@@ -73,13 +86,14 @@ spec:
               {{- else }}
               serviceName: {{ include "meet.backend.fullname" . }}
               servicePort: {{ .Values.backend.service.port }}
-            {{- end }}
+              {{- end }}
+
           - path: /external-api/
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if $isV18 }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $isV19 }}
               service:
                 name: {{ include "meet.backend.fullname" . }}
                 port:
@@ -87,21 +101,23 @@ spec:
               {{- else }}
               serviceName: {{ include "meet.backend.fullname" . }}
               servicePort: {{ .Values.backend.service.port }}
-            {{- end }}
+              {{- end }}
+
           {{- with .Values.ingress.customBackends }}
             {{- toYaml . | nindent 10 }}
           {{- end }}
     {{- end }}
+
     {{- range .Values.ingress.hosts }}
     - host: {{ . | quote }}
       http:
         paths:
           - path: {{ $.Values.ingress.path | quote }}
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if $isV18 }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $isV19 }}
               service:
                 name: {{ include "meet.frontend.fullname" $ }}
                 port:
@@ -109,13 +125,14 @@ spec:
               {{- else }}
               serviceName: {{ include "meet.frontend.fullname" $ }}
               servicePort: {{ $.Values.frontend.service.port }}
-            {{- end }}
+              {{- end }}
+
           - path: /api/
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if $isV18 }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $isV19 }}
               service:
                 name: {{ include "meet.backend.fullname" $ }}
                 port:
@@ -123,13 +140,14 @@ spec:
               {{- else }}
               serviceName: {{ include "meet.backend.fullname" $ }}
               servicePort: {{ $.Values.backend.service.port }}
-            {{- end }}
+              {{- end }}
+
           - path: /external-api/
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if $isV18 }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $isV19 }}
               service:
                 name: {{ include "meet.backend.fullname" $ }}
                 port:
@@ -137,10 +155,10 @@ spec:
               {{- else }}
               serviceName: {{ include "meet.backend.fullname" $ }}
               servicePort: {{ $.Values.backend.service.port }}
-            {{- end }}
+              {{- end }}
+
           {{- with $.Values.ingress.customBackends }}
             {{- toYaml . | nindent 10 }}
           {{- end }}
     {{- end }}
 {{- end }}
-

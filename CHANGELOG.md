@@ -16,6 +16,7 @@ and this project adheres to
 
 ### Changed
 
+- 🧹(backend) Made role selection deterministic #18
 - 🧹(backend) Removed random role and made condition deterministic #9
 - ♿️(frontend) adjust visual-only tooltip a11y labels #910
 - ♿️(frontend) sr pin/unpin announcements with dedicated messages #898
