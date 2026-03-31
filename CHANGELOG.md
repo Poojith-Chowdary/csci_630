@@ -7,7 +7,8 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+- Simplified HSL regex and refactored getParticipantColor to use
+  optional chaining; removed isValidHsl helper (issue #25)
 ### Changed
 - Consolidate duplicate log formatting in `bin/prepare-release.sh` 
  into a single `print_msg` helper (SonarQube smell fix)
