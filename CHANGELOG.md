@@ -9,6 +9,8 @@ and this project adheres to
 ## [Unreleased]
 
 ### Changed
+- Consolidate duplicate log formatting in `bin/prepare-release.sh` 
+ into a single `print_msg` helper (SonarQube smell fix)
 
 - Use Kubernetes Secret for MinIO credentials in minio.yaml
 
