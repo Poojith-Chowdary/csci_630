@@ -9,17 +9,16 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Function to print colored output
-print_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+print_msg() {
+    local color=$1
+    local label=$2
+    local message=$3
+    echo -e "${color}[${label}]${NC} ${message}"
 }
 
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
+print_info()    { print_msg "${GREEN}"  "INFO"    "$1"; }
+print_error()   { print_msg "${RED}"    "ERROR"   "$1"; }
+print_warning() { print_msg "${YELLOW}" "WARNING" "$1"; }
 
 
 # Function to update npm package version
