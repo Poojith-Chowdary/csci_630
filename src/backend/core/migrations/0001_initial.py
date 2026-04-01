@@ -25,26 +25,20 @@ class Migration(migrations.Migration):
                     models.UUIDField(
                         default=uuid.uuid4,
                         editable=False,
-                        help_text="primary key for the record as UUID",
                         primary_key=True,
                         serialize=False,
-                        verbose_name="id",
                     ),
                 ),
                 (
                     "created_at",
                     models.DateTimeField(
                         auto_now_add=True,
-                        help_text="date and time at which a record was created",
-                        verbose_name="created on",
                     ),
                 ),
                 (
                     "updated_at",
                     models.DateTimeField(
                         auto_now=True,
-                        help_text="date and time at which a record was last updated",
-                        verbose_name="updated on",
                     ),
                 ),
                 ("is_public", models.BooleanField(default=True)),
@@ -78,26 +72,20 @@ class Migration(migrations.Migration):
                     models.UUIDField(
                         default=uuid.uuid4,
                         editable=False,
-                        help_text="primary key for the record as UUID",
                         primary_key=True,
                         serialize=False,
-                        verbose_name="id",
                     ),
                 ),
                 (
                     "created_at",
                     models.DateTimeField(
                         auto_now_add=True,
-                        help_text="date and time at which a record was created",
-                        verbose_name="created on",
                     ),
                 ),
                 (
                     "updated_at",
                     models.DateTimeField(
                         auto_now=True,
-                        help_text="date and time at which a record was last updated",
-                        verbose_name="updated on",
                     ),
                 ),
                 (
@@ -257,26 +245,20 @@ class Migration(migrations.Migration):
                     models.UUIDField(
                         default=uuid.uuid4,
                         editable=False,
-                        help_text="primary key for the record as UUID",
                         primary_key=True,
                         serialize=False,
-                        verbose_name="id",
                     ),
                 ),
                 (
                     "created_at",
                     models.DateTimeField(
                         auto_now_add=True,
-                        help_text="date and time at which a record was created",
-                        verbose_name="created on",
                     ),
                 ),
                 (
                     "updated_at",
                     models.DateTimeField(
                         auto_now=True,
-                        help_text="date and time at which a record was last updated",
-                        verbose_name="updated on",
                     ),
                 ),
                 (
@@ -332,3 +314,4 @@ class Migration(migrations.Migration):
             ),
         ),
     ]
+    
