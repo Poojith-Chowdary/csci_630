@@ -195,7 +195,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
 
     if (imagePath === undefined && needsUpdate === false) return
 
-    // Prefer ??= (Sonar): create only if missing
     this.virtualBackgroundImage ??= document.createElement('img')
     this.virtualBackgroundImage.crossOrigin = 'anonymous'
 
@@ -264,9 +263,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     })
   }
 
-  /**
-   * Resize the source video to the processing resolution.
-   */
   async sizeSource() {
     const { segmentationMaskCanvasCtx, videoElement } = this.getRequiredState()
 
@@ -282,7 +278,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
       PROCESSING_HEIGHT
     )
 
-    // Keep original behavior (note: existing code uses PROCESSING_WIDTH twice)
     this.sourceImageData = segmentationMaskCanvasCtx.getImageData(
       0,
       0,
@@ -291,9 +286,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     )
   }
 
-  /**
-   * Run the segmentation.
-   */
   async segment() {
     const { imageSegmenter } = this.getRequiredState()
     const sourceImageData = this.sourceImageData
@@ -314,12 +306,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     })
   }
 
-  /**
-   * Shared pipeline:
-   * - build alpha mask from categoryMask
-   * - write ImageData to segmentation canvas
-   * - stamp it so downstream drawImage uses it
-   */
   private updateSegmentationMaskCanvas(): void {
     const {
       segmentationMask,
@@ -327,8 +313,7 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
       segmentationMaskCanvasCtx,
     } = this.getRequiredState()
 
-    const result = this.imageSegmenterResult
-    const categoryMask = result?.categoryMask
+    const categoryMask = this.imageSegmenterResult?.categoryMask
     if (categoryMask === undefined) {
       throw new Error('Segmentation result is missing categoryMask')
     }
@@ -340,7 +325,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
 
     segmentationMaskCanvasCtx.putImageData(segmentationMask, 0, 0)
 
-    // Keep a consistent stamp step (mirrors the repeated code path intent)
     segmentationMaskCanvasCtx.drawImage(
       segmentationMaskCanvas,
       0,
@@ -350,9 +334,6 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     )
   }
 
-  /**
-   * Shared opacity mask stage used by both blur + virtual background.
-   */
   private drawOpacityMask(): void {
     const { outputCanvasCtx, segmentationMaskCanvas, videoElement } =
       this.getRequiredState()
@@ -373,29 +354,21 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     )
   }
 
-  /**
-   * TODO: future improvement with WebGL.
-   */
   async blur() {
     const { outputCanvasCtx, videoElement } = this.getRequiredState()
 
     this.updateSegmentationMaskCanvas()
     this.drawOpacityMask()
 
-    // Draw clear body.
     outputCanvasCtx.globalCompositeOperation = 'source-in'
     outputCanvasCtx.filter = 'none'
     outputCanvasCtx.drawImage(videoElement, 0, 0)
 
-    // Draw blurry background.
     outputCanvasCtx.globalCompositeOperation = 'destination-over'
     outputCanvasCtx.filter = `blur(${this.options.blurRadius ?? DEFAULT_BLUR}px)`
     outputCanvasCtx.drawImage(videoElement, 0, 0)
   }
 
-  /**
-   * TODO: future improvement with WebGL.
-   */
   async drawVirtualBackground() {
     const { outputCanvas, outputCanvasCtx, videoElement } = this.getRequiredState()
 
@@ -409,12 +382,10 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     this.updateSegmentationMaskCanvas()
     this.drawOpacityMask()
 
-    // Draw clear body.
     outputCanvasCtx.globalCompositeOperation = 'source-in'
     outputCanvasCtx.filter = 'none'
     outputCanvasCtx.drawImage(videoElement, 0, 0)
 
-    // Draw virtual background.
     outputCanvasCtx.globalCompositeOperation = 'destination-over'
     outputCanvasCtx.filter = 'none'
     outputCanvasCtx.drawImage(
@@ -443,11 +414,13 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     const existing = document.querySelector<HTMLCanvasElement>(
       `canvas#${BLUR_CANVAS_ID}`
     )
-    this.outputCanvas = existing ?? undefined
+    this.outputCanvas = existing === null ? undefined : existing
 
     const sourceSettings = this.sourceSettings
     if (sourceSettings === undefined) {
-      throw new Error('sourceSettings must be set before creating the output canvas')
+      throw new Error(
+        'sourceSettings must be set before creating the output canvas'
+      )
     }
 
     if (this.outputCanvas === undefined) {
@@ -473,7 +446,7 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     const existing = document.querySelector<HTMLCanvasElement>(
       `#${SEGMENTATION_MASK_CANVAS_ID}`
     )
-    this.segmentationMaskCanvas = existing ?? undefined
+    this.segmentationMaskCanvas = existing === null ? undefined : existing
 
     if (this.segmentationMaskCanvas === undefined) {
       this.segmentationMaskCanvas = this._createCanvas(
