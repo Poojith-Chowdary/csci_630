@@ -22,6 +22,7 @@ and this project adheres to
 
 ### Changed
 
+- ♿️(frontend) Refactor formatDate replace-chain #27
 - ♿️(frontend) Improved accessibility by adding proper labels #26
 - 🧹(backend) Made role selection deterministic #18
 - 🧹(backend) Removed random role and made condition deterministic #9
