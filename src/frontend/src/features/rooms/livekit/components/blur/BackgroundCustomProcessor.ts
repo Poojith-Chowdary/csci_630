@@ -448,13 +448,11 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     )
     this.segmentationMaskCanvas ??= existing ?? undefined
 
-    if (this.segmentationMaskCanvas === undefined) {
-      this.segmentationMaskCanvas = this._createCanvas(
-        SEGMENTATION_MASK_CANVAS_ID,
-        PROCESSING_WIDTH,
-        PROCESSING_HEIGHT
-      )
-    }
+    this.segmentationMaskCanvas ??= this._createCanvas(
+      SEGMENTATION_MASK_CANVAS_ID,
+      PROCESSING_WIDTH,
+      PROCESSING_HEIGHT
+    )
 
     const ctx = this.segmentationMaskCanvas.getContext('2d')
     if (ctx === null) {
