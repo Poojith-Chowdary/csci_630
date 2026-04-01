@@ -19,7 +19,7 @@ COMPOSE_PROJECT="meet"
 # $UNSET_USER environment variable to 1.
 function _set_user() {
 
-    if [ "${UNSET_USER}" -eq 1 ]; then
+    if [[ "${UNSET_USER}" -eq 1 ]]; then
         USER_ID=""
         return
     fi
@@ -42,7 +42,7 @@ function _docker_compose() {
 
     # Centralized USER_ID -> --user handling (single source of truth)
     local -a user_args=()
-    if [ -n "${USER_ID:-}" ]; then
+    if [[ -n "${USER_ID:-}" ]]; then
         user_args=(--user="${USER_ID}")
     fi
 
