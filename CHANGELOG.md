@@ -9,6 +9,8 @@ and this project adheres to
 ## [Unreleased]
 
 ### Changed
+- Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
+  into a reusable named template via `range` loop (issue #22)
 - Consolidate duplicate log formatting in `bin/prepare-release.sh` 
  into a single `print_msg` helper (SonarQube smell fix)
 
