@@ -22,9 +22,7 @@ and this project adheres to
 
 ### Changed
 
-- 🧹 (frontend) Refactor SettingsDialogExtended layout styles (Closes #30)
-- 🧹 (infra) Centralized docker compose `--user` handling (Closes #29)
-- 🔒️ (infra) Avoid writing Vaultwarden credentials (Closes #28)
+- 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
 - 🧹 (backend) Remove redundant `help_text`/`verbose_name` #31
 - 🧹 (infra) Centralized docker compose `--user` handling #29
 - 🔒️ (infra) Avoid writing Vaultwarden credentials #28
