@@ -22,6 +22,7 @@ and this project adheres to
 
 ### Changed
 
+- 🔐 (infra) Avoid writing Vaultwarden credentials (Closes #28)
 - ♿️(frontend) Refactor formatDate replace-chain #27
 - ♿️(frontend) Improved accessibility by adding proper labels #26
 - 🧹(backend) Made role selection deterministic #18
