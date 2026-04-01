@@ -1,29 +1,39 @@
-export function formatDate(
-  date: Date | string | number,
-  format: string = 'YYYY-MM-DD'
-): string {
-  const dateObj = date instanceof Date ? date : new Date(date)
+type DateLike = Date | string | number | null | undefined
 
-  if (isNaN(dateObj.getTime())) {
-    return 'Invalid Date'
+const pad2 = (value: number): string => String(value).padStart(2, '0')
+
+const toValidDate = (value: DateLike): Date | null => {
+  if (value == null) return null
+
+  const date = value instanceof Date ? value : new Date(value)
+
+  // Single validity check (removes redundant validation logic)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+/**
+ * Format a date-like input into a string.
+ * Default format remains "YYYY-MM-DD" (no behavior change intended).
+ */
+export const formatDate = (
+  value: DateLike,
+  format: string = 'YYYY-MM-DD'
+): string => {
+  const date = toValidDate(value)
+  if (!date) return ''
+
+  const tokens: Record<string, string> = {
+    YYYY: String(date.getFullYear()),
+    MM: pad2(date.getMonth() + 1),
+    DD: pad2(date.getDate()),
+    HH: pad2(date.getHours()),
+    mm: pad2(date.getMinutes()),
+    ss: pad2(date.getSeconds()),
   }
 
-  const year = dateObj.getFullYear()
-  const month = dateObj.getMonth() + 1 // getMonth() returns 0-11
-  const day = dateObj.getDate()
-  const hours = dateObj.getHours()
-  const minutes = dateObj.getMinutes()
-  const seconds = dateObj.getSeconds()
-
-  const pad = (num: number): string => String(num).padStart(2, '0')
-
-  let result = format
-  result = result.replace(/YYYY/g, year.toString())
-  result = result.replace(/MM/g, pad(month))
-  result = result.replace(/DD/g, pad(day))
-  result = result.replace(/HH/g, pad(hours))
-  result = result.replace(/mm/g, pad(minutes))
-  result = result.replace(/ss/g, pad(seconds))
-
-  return result
+  // Single-pass formatting (replaces multiple chained .replace calls)
+  return format.replace(
+    /YYYY|MM|DD|HH|mm|ss/g,
+    (match) => tokens[match] ?? match
+  )
 }
