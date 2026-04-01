@@ -94,31 +94,47 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
 
   private getRequiredState(): RequiredState {
     if (this.source === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: source is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: source is missing'
+      )
     }
     if (this.sourceSettings === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: sourceSettings is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: sourceSettings is missing'
+      )
     }
     if (this.videoElement === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: videoElement is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: videoElement is missing'
+      )
     }
     if (this.outputCanvas === undefined || this.outputCanvasCtx === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: output canvas is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: output canvas is missing'
+      )
     }
     if (
       this.segmentationMaskCanvas === undefined ||
       this.segmentationMaskCanvasCtx === undefined
     ) {
-      throw new Error('BackgroundCustomProcessor is not initialized: mask canvas is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: mask canvas is missing'
+      )
     }
     if (this.segmentationMask === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: segmentationMask is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: segmentationMask is missing'
+      )
     }
     if (this.imageSegmenter === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: imageSegmenter is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: imageSegmenter is missing'
+      )
     }
     if (this.timerWorker === undefined) {
-      throw new Error('BackgroundCustomProcessor is not initialized: timerWorker is missing')
+      throw new Error(
+        'BackgroundCustomProcessor is not initialized: timerWorker is missing'
+      )
     }
 
     return {
@@ -171,14 +187,20 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
   }
 
   _initVirtualBackgroundImage() {
+    const imagePath = this.options.imagePath
     const needsUpdate =
-      this.options.imagePath &&
-      this.virtualBackgroundImage &&
-      this.virtualBackgroundImage.src !== this.options.imagePath
-    if (this.options.imagePath || needsUpdate) {
-      this.virtualBackgroundImage = document.createElement('img')
-      this.virtualBackgroundImage.crossOrigin = 'anonymous'
-      this.virtualBackgroundImage.src = this.options.imagePath as string
+      imagePath !== undefined &&
+      this.virtualBackgroundImage !== undefined &&
+      this.virtualBackgroundImage.src !== imagePath
+
+    if (imagePath === undefined && needsUpdate === false) return
+
+    // Prefer ??= (Sonar): create only if missing
+    this.virtualBackgroundImage ??= document.createElement('img')
+    this.virtualBackgroundImage.crossOrigin = 'anonymous'
+
+    if (imagePath !== undefined) {
+      this.virtualBackgroundImage.src = imagePath
     }
   }
 
@@ -332,11 +354,8 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
    * Shared opacity mask stage used by both blur + virtual background.
    */
   private drawOpacityMask(): void {
-    const {
-      outputCanvasCtx,
-      segmentationMaskCanvas,
-      videoElement,
-    } = this.getRequiredState()
+    const { outputCanvasCtx, segmentationMaskCanvas, videoElement } =
+      this.getRequiredState()
 
     outputCanvasCtx.globalCompositeOperation = 'copy'
     outputCanvasCtx.filter = OPACITY_MASK_BLUR_FILTER
@@ -382,7 +401,9 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
 
     const virtualBackgroundImage = this.virtualBackgroundImage
     if (virtualBackgroundImage === undefined) {
-      throw new Error('virtualBackgroundImage is missing for virtual background mode')
+      throw new Error(
+        'virtualBackgroundImage is missing for virtual background mode'
+      )
     }
 
     this.updateSegmentationMaskCanvas()
@@ -424,13 +445,18 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     )
     this.outputCanvas = existing ?? undefined
 
-    const { sourceSettings } = this.getRequiredState()
+    const sourceSettings = this.sourceSettings
+    if (sourceSettings === undefined) {
+      throw new Error('sourceSettings must be set before creating the output canvas')
+    }
 
     if (this.outputCanvas === undefined) {
       const width = sourceSettings.width
       const height = sourceSettings.height
       if (width === undefined || height === undefined) {
-        throw new Error('sourceSettings width/height are required to create output canvas')
+        throw new Error(
+          'sourceSettings width/height are required to create output canvas'
+        )
       }
 
       this.outputCanvas = this._createCanvas(BLUR_CANVAS_ID, width, height)
@@ -459,7 +485,9 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
 
     const ctx = this.segmentationMaskCanvas.getContext('2d')
     if (ctx === null) {
-      throw new Error('Failed to create 2D context for segmentation mask canvas')
+      throw new Error(
+        'Failed to create 2D context for segmentation mask canvas'
+      )
     }
     this.segmentationMaskCanvasCtx = ctx
   }
