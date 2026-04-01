@@ -370,7 +370,8 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
   }
 
   async drawVirtualBackground() {
-    const { outputCanvas, outputCanvasCtx, videoElement } = this.getRequiredState()
+    const { outputCanvas, outputCanvasCtx, videoElement } =
+      this.getRequiredState()
 
     const virtualBackgroundImage = this.virtualBackgroundImage
     if (virtualBackgroundImage === undefined) {
