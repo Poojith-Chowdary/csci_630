@@ -22,6 +22,7 @@ and this project adheres to
 
 ### Changed
 
+- 🧹 (frontend) Refactor background processor init/state #33
 - 🧹 (backend) Remove redundant `help_text`/`verbose_name` #31
 - 🧹 (infra) Centralized docker compose `--user` handling #29
 - 🔒️ (infra) Avoid writing Vaultwarden credentials #28
