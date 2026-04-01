@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { Heading } from "react-aria-components";
-import { useTranslation } from "react-i18next";
 import {
   RiAccountCircleLine,
   RiEyeLine,
@@ -9,6 +8,7 @@ import {
   RiSpeakerLine,
   RiVideoOnLine,
 } from "@remixicon/react";
+import { useTranslation } from "react-i18next";
 
 import { Dialog, type DialogProps } from "@/primitives";
 import { Icon } from "@/primitives/Icon";
@@ -20,8 +20,8 @@ import { useMediaQuery } from "@/features/rooms/livekit/hooks/useMediaQuery";
 import { useIsAdminOrOwner } from "@/features/rooms/livekit/hooks/useIsAdminOrOwner";
 import { SettingsDialogExtendedKey } from "@/features/settings/type";
 
-import { AccountTab } from "./tabs/AccountTab";
 import AccessibilityTab from "./tabs/AccessibilityTab";
+import { AccountTab } from "./tabs/AccountTab";
 import { AudioTab } from "./tabs/AudioTab";
 import { GeneralTab } from "./tabs/GeneralTab";
 import { NotificationsTab } from "./tabs/NotificationsTab";
@@ -30,56 +30,55 @@ import { VideoTab } from "./tabs/VideoTab";
 
 /**
  * Layout constants (single source of truth)
- * - Avoid rem/px mismatches by deriving breakpoint from modal width.
+ * - Replaces “fixme” magic numbers with named constants.
+ * - Keeps existing behavior while making values easy to audit/change.
  */
-const SETTINGS_DIALOG_WIDTH_REM = 50;
-const SETTINGS_DIALOG_MAX_HEIGHT_REM = 40.625;
-const SETTINGS_DIALOG_MARGIN_Y_REM = -1;
-const SETTINGS_DIALOG_VIEWPORT_HEIGHT_OFFSET_REM = 2;
+const DIALOG_WIDTH_REM = 50;
+const DIALOG_MAX_HEIGHT_REM = 40.625;
+const DIALOG_MARGIN_Y_REM = -1;
+const VIEWPORT_OFFSET_REM = 2;
 
-const WIDE_SCREEN_MIN_WIDTH_REM = SETTINGS_DIALOG_WIDTH_REM; // keep breakpoint consistent
-const WIDE_SCREEN_MEDIA_QUERY = `(min-width: ${WIDE_SCREEN_MIN_WIDTH_REM}rem)`;
+const WIDE_BREAKPOINT_REM = DIALOG_WIDTH_REM;
+const WIDE_MEDIA_QUERY = `(min-width: ${WIDE_BREAKPOINT_REM}rem)`;
 
-// spacing tokens
-const TABLIST_PADDING_Y = "1rem";
-const TABLIST_PADDING_RIGHT = "1.5rem";
-const TABLIST_WIDE_PADDING_LEFT = "1rem";
-const TABLIST_NARROW_PADDING_LEFT = "0.5rem";
-const TAB_PANEL_MARGIN_TOP = "3.5rem";
+const TABLIST_PADDING_Y_REM = 1;
+const TABLIST_PADDING_RIGHT_REM = 1.5;
+const TABLIST_PADDING_LEFT_WIDE_REM = 1;
+const TABLIST_PADDING_LEFT_NARROW_REM = 0.5;
 
-const tabsStyle = css({
-  maxHeight: `${SETTINGS_DIALOG_MAX_HEIGHT_REM}rem`,
-  width: `${SETTINGS_DIALOG_WIDTH_REM}rem`,
+const TAB_PANEL_MARGIN_TOP_REM = 3.5;
+
+const dialogStyle = css({
+  maxHeight: `${DIALOG_MAX_HEIGHT_REM}rem`,
+  width: `${DIALOG_WIDTH_REM}rem`,
   maxWidth: "100%",
   overflow: "hidden",
-  marginY: `${SETTINGS_DIALOG_MARGIN_Y_REM}rem`,
-  height: `calc(100vh - ${SETTINGS_DIALOG_VIEWPORT_HEIGHT_OFFSET_REM}rem)`,
+  marginY: `${DIALOG_MARGIN_Y_REM}rem`,
+  height: `calc(100vh - ${VIEWPORT_OFFSET_REM}rem)`,
 });
 
-const tabListContainerStyle = css({
+const tabListBaseStyle = css({
   display: "flex",
   flexDirection: "column",
-  paddingY: TABLIST_PADDING_Y,
-  paddingRight: TABLIST_PADDING_RIGHT,
-
-  // Use theme-aware colors instead of hardcoded "lightGray"
+  paddingY: `${TABLIST_PADDING_Y_REM}rem`,
+  paddingRight: `${TABLIST_PADDING_RIGHT_REM}rem`,
   borderRightWidth: "1px",
   borderRightStyle: "solid",
   borderRightColor: { base: "gray.200", _dark: "gray.700" },
 });
 
-const tabListContainerWideStyle = css({
-  paddingLeft: TABLIST_WIDE_PADDING_LEFT,
+const tabListWideStyle = css({
+  paddingLeft: `${TABLIST_PADDING_LEFT_WIDE_REM}rem`,
 });
 
-const tabListContainerNarrowStyle = css({
-  paddingLeft: TABLIST_NARROW_PADDING_LEFT,
+const tabListNarrowStyle = css({
+  paddingLeft: `${TABLIST_PADDING_LEFT_NARROW_REM}rem`,
 });
 
 const tabPanelContainerStyle = css({
   display: "flex",
-  flexGrow: "1",
-  marginTop: TAB_PANEL_MARGIN_TOP,
+  flexGrow: 1,
+  marginTop: `${TAB_PANEL_MARGIN_TOP_REM}rem`,
   minWidth: 0,
 });
 
@@ -89,86 +88,81 @@ export type SettingsDialogExtended = Pick<DialogProps, "isOpen" | "onOpenChange"
 
 export const SettingsDialogExtended = (props: SettingsDialogExtended) => {
   const { t } = useTranslation("settings");
-  const dialogEl = useRef(null);
+  const dialogEl = useRef<null>(null);
 
-  // Wide screen => labels visible. Narrow => icon-only tab list.
-  const isWideScreen = useMediaQuery(WIDE_SCREEN_MEDIA_QUERY);
-
+  const isWideScreen = useMediaQuery(WIDE_MEDIA_QUERY);
   const isAdminOrOwner = useIsAdminOrOwner();
 
-  const tabListStyle = `${tabListContainerStyle} ${isWideScreen ? tabListContainerWideStyle : tabListContainerNarrowStyle
+  const tabListStyle = `${tabListBaseStyle} ${isWideScreen ? tabListWideStyle : tabListNarrowStyle
     }`;
 
-  const tabLabel = (key: SettingsDialogExtendedKey) =>
+  const maybeLabel = (key: SettingsDialogExtendedKey) =>
     isWideScreen ? t(`tabs.${key}`) : null;
 
   return (
     <Dialog
       {...props}
-      ref={dialogEl}
+      innerRef={dialogEl}
       aria-label={t("dialog.heading")}
-      className={tabsStyle}
+      className={dialogStyle}
     >
       <Tabs defaultSelectedKey={props.defaultSelectedTab}>
-        <Heading
-          slot="title"
-          className={text({ size: "lg", weight: "bold" })}
-        >
+        <Heading slot="title" className={text({ variant: "h3", weight: "bold" })}>
           {isWideScreen && t("dialog.heading")}
         </Heading>
 
         <div className={css({ display: "flex", height: "100%" })}>
           <div className={tabListStyle}>
             <TabList border={false}>
-              <Tab isIconOnly value={SettingsDialogExtendedKey.ACCOUNT}>
-                <Icon>
+              <Tab icon value={SettingsDialogExtendedKey.ACCOUNT}>
+                <Icon name="account">
                   <RiAccountCircleLine />
                 </Icon>
-                {tabLabel(SettingsDialogExtendedKey.ACCOUNT)}
+                {maybeLabel(SettingsDialogExtendedKey.ACCOUNT)}
               </Tab>
 
-              <Tab isIconOnly value={SettingsDialogExtendedKey.AUDIO}>
-                <Icon>
+              <Tab icon value={SettingsDialogExtendedKey.AUDIO}>
+                <Icon name="audio">
                   <RiSpeakerLine />
                 </Icon>
-                {tabLabel(SettingsDialogExtendedKey.AUDIO)}
+                {maybeLabel(SettingsDialogExtendedKey.AUDIO)}
               </Tab>
 
-              <Tab isIconOnly value={SettingsDialogExtendedKey.VIDEO}>
-                <Icon>
+              <Tab icon value={SettingsDialogExtendedKey.VIDEO}>
+                <Icon name="video">
                   <RiVideoOnLine />
                 </Icon>
-                {tabLabel(SettingsDialogExtendedKey.VIDEO)}
+                {maybeLabel(SettingsDialogExtendedKey.VIDEO)}
               </Tab>
 
-              <Tab isIconOnly value={SettingsDialogExtendedKey.GENERAL}>
-                <Icon>
+              <Tab icon value={SettingsDialogExtendedKey.GENERAL}>
+                <Icon name="general">
                   <RiSettings3Line />
                 </Icon>
-                {tabLabel(SettingsDialogExtendedKey.GENERAL)}
+                {maybeLabel(SettingsDialogExtendedKey.GENERAL)}
               </Tab>
 
-              <Tab isIconOnly value={SettingsDialogExtendedKey.NOTIFICATIONS}>
-                <Icon>
+              <Tab icon value={SettingsDialogExtendedKey.NOTIFICATIONS}>
+                <Icon name="notifications">
                   <RiNotification3Line />
                 </Icon>
-                {tabLabel(SettingsDialogExtendedKey.NOTIFICATIONS)}
+                {maybeLabel(SettingsDialogExtendedKey.NOTIFICATIONS)}
               </Tab>
 
               {isAdminOrOwner && (
-                <Tab isIconOnly value={SettingsDialogExtendedKey.TRANSCRIPTION}>
-                  <Icon>
+                <Tab icon value={SettingsDialogExtendedKey.TRANSCRIPTION}>
+                  <Icon name="transcription">
                     <RiSettings3Line />
                   </Icon>
-                  {tabLabel(SettingsDialogExtendedKey.TRANSCRIPTION)}
+                  {maybeLabel(SettingsDialogExtendedKey.TRANSCRIPTION)}
                 </Tab>
               )}
 
-              <Tab isIconOnly value={SettingsDialogExtendedKey.ACCESSIBILITY}>
-                <Icon>
+              <Tab icon value={SettingsDialogExtendedKey.ACCESSIBILITY}>
+                <Icon name="accessibility">
                   <RiEyeLine />
                 </Icon>
-                {tabLabel(SettingsDialogExtendedKey.ACCESSIBILITY)}
+                {maybeLabel(SettingsDialogExtendedKey.ACCESSIBILITY)}
               </Tab>
             </TabList>
           </div>
@@ -179,7 +173,6 @@ export const SettingsDialogExtended = (props: SettingsDialogExtended) => {
             <VideoTab />
             <GeneralTab />
             <NotificationsTab />
-            {/* Transcription tab won't be accessible if the tab is not active in the tab list */}
             {isAdminOrOwner && <TranscriptionTab />}
             <AccessibilityTab />
           </div>
