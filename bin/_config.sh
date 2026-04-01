@@ -8,7 +8,6 @@ UNSET_USER=0
 COMPOSE_FILE="${REPO_DIR}/compose.yml"
 COMPOSE_PROJECT="meet"
 
-
 # _set_user: set (or unset) default user id used to run docker commands
 #
 # usage: _set_user
@@ -20,13 +19,13 @@ COMPOSE_PROJECT="meet"
 # $UNSET_USER environment variable to 1.
 function _set_user() {
 
-    if [ $UNSET_USER -eq 1 ]; then
+    if [[ "${UNSET_USER}" -eq 1 ]]; then
         USER_ID=""
         return
     fi
 
     # USER_ID = USER_ID or `id -u` if USER_ID is not set
-    USER_ID=${USER_ID:-$(id -u)}
+    USER_ID="${USER_ID:-$(id -u)}"
 
     echo "🙋(user) ID: ${USER_ID}"
 }
@@ -40,10 +39,18 @@ function _set_user() {
 function _docker_compose() {
 
     echo "🐳(compose) project: '${COMPOSE_PROJECT}' file: '${COMPOSE_FILE}'"
+
+    # Centralized USER_ID -> --user handling (single source of truth)
+    local -a user_args=()
+    if [[ -n "${USER_ID:-}" ]]; then
+        user_args=(--user="${USER_ID}")
+    fi
+
     docker compose \
         -p "${COMPOSE_PROJECT}" \
         -f "${COMPOSE_FILE}" \
         --project-directory "${REPO_DIR}" \
+        "${user_args[@]}" \
         "$@"
 }
 
@@ -55,13 +62,7 @@ function _docker_compose() {
 # ARGS   : docker compose run command arguments
 function _dc_run() {
     _set_user
-
-    user_args="--user=$USER_ID"
-    if [ -z $USER_ID ]; then
-        user_args=""
-    fi
-
-    _docker_compose run --rm $user_args "$@"
+    _docker_compose run --rm "$@"
 }
 
 # _dc_exec: wrap docker compose exec command
@@ -75,12 +76,7 @@ function _dc_exec() {
 
     echo "🐳(compose) exec command: '\$@'"
 
-    user_args="--user=$USER_ID"
-    if [ -z $USER_ID ]; then
-        user_args=""
-    fi
-
-    _docker_compose exec $user_args "$@"
+    _docker_compose exec "$@"
 }
 
 # _django_manage: wrap django's manage.py command with docker compose
