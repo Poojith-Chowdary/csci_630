@@ -10,13 +10,13 @@ const ensureStringArray = (value: unknown): string[] => {
 
 // Stable, deterministic key generator (no external deps).
 const stableKey = (input: string): string => {
-     let hash = 5381
-     for(let i = 0; i < input.length; i += 1) {
-          const codePoint = input.codePointAt(i)
-          if(codePoint === undefined) break
-          hash = (hash * 33) ^ codePoint
-     }
-     return (hash >>> 0).toString(16)
+  let hash = 5381
+  for (let i = 0; i < input.length; i += 1) {
+    const codePoint = input.codePointAt(i)
+    if (codePoint === undefined) break
+    hash = (hash * 33) ^ codePoint
+  }
+  return (hash >>> 0).toString(16)
 }
 
 export const TermsOfServiceRoute = () => {
