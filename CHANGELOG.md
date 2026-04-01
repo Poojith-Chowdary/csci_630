@@ -22,8 +22,9 @@ and this project adheres to
 
 ### Changed
 
-- 🧹 (infra) Centralized docker compose `--user` handling (Closes #29)
-- 🔒️ (infra) Avoid writing Vaultwarden credentials (Closes #28)
+- 🧹 (backend) Remove redundant `help_text`/`verbose_name` #31
+- 🧹 (infra) Centralized docker compose `--user` handling #29
+- 🔒️ (infra) Avoid writing Vaultwarden credentials #28
 - ♿️(frontend) Refactor formatDate replace-chain #27
 - ♿️(frontend) Improved accessibility by adding proper labels #26
 - 🧹(backend) Made role selection deterministic #18
