@@ -111,10 +111,7 @@ export const SettingsDialogExtended = (props: SettingsDialogExtended) => {
       className={dialogStyle}
     >
       <Tabs defaultSelectedKey={props.defaultSelectedTab}>
-        <Heading
-          slot="title"
-          className={text({ variant: 'h3'})}
-        >
+        <Heading slot="title" className={text({ variant: 'h3' })}>
           {isWideScreen && t('dialog.heading')}
         </Heading>
 
