@@ -22,6 +22,7 @@ and this project adheres to
 
 ### Changed
 
+- 🧹 (frontend) Refactor background processor init/state #33
 - 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
 - 🧹 (backend) Remove redundant `help_text`/`verbose_name` #31
 - 🧹 (infra) Centralized docker compose `--user` handling #29
