@@ -13,6 +13,7 @@ const stableKey = (input: string): string => {
   let hash = 5381
   for (let i = 0; i < input.length; i += 1) {
     hash = (hash * 33) ^ input.codePointAt(i)
+    if (hash === undefined) return
   }
   return (hash >>> 0).toString(16)
 }
