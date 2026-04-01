@@ -12,7 +12,7 @@ const ensureStringArray = (value: unknown): string[] => {
 const stableKey = (input: string): string => {
   let hash = 5381
   for (let i = 0; i < input.length; i += 1) {
-    hash = (hash * 33) ^ input.codePointAt(i) ?? 0
+    hash = (hash * 33) ^ input.codePointAt(i)
   }
   return (hash >>> 0).toString(16)
 }
