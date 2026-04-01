@@ -22,6 +22,7 @@ and this project adheres to
 
 ### Changed
 
+- 🧹 (infra) Centralized docker compose `--user` handling (Closes #29)
 - 🔒️ (infra) Avoid writing Vaultwarden credentials (Closes #28)
 - ♿️(frontend) Refactor formatDate replace-chain #27
 - ♿️(frontend) Improved accessibility by adding proper labels #26
