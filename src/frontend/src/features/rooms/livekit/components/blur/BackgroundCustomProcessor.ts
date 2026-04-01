@@ -414,7 +414,7 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     const existing = document.querySelector<HTMLCanvasElement>(
       `canvas#${BLUR_CANVAS_ID}`
     )
-    this.outputCanvas = existing ?? undefined
+    this.outputCanvas ??= existing ?? undefined
 
     const sourceSettings = this.sourceSettings
     if (sourceSettings === undefined) {
@@ -446,7 +446,7 @@ export class BackgroundCustomProcessor implements BackgroundProcessorInterface {
     const existing = document.querySelector<HTMLCanvasElement>(
       `#${SEGMENTATION_MASK_CANVAS_ID}`
     )
-    this.segmentationMaskCanvas = existing ?? undefined
+    this.segmentationMaskCanvas ??= existing ?? undefined
 
     if (this.segmentationMaskCanvas === undefined) {
       this.segmentationMaskCanvas = this._createCanvas(
