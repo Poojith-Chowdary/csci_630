@@ -7,10 +7,14 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Deduplicated ingress admin version and backend logic via
+- Deduplicated posthog ingress version and backend logic via
+  named helpers in `_helpers.tpl` (issue #24)
+  - Deduplicated ingress admin version and backend logic via
   named helpers in `_helpers.tpl` (issue #23)
 
 ### Changed
+- Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
+  into a reusable named template via `range` loop (issue #22)
 - Consolidate duplicate log formatting in `bin/prepare-release.sh` 
  into a single `print_msg` helper (SonarQube smell fix)
 
@@ -24,6 +28,13 @@ and this project adheres to
 
 ### Changed
 
+- 🧹 (frontend) Refactor background processor init/state #33
+- 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
+- 🧹 (backend) Remove redundant `help_text`/`verbose_name` #31
+- 🧹 (infra) Centralized docker compose `--user` handling #29
+- 🔒️ (infra) Avoid writing Vaultwarden credentials #28
+- ♿️(frontend) Refactor formatDate replace-chain #27
+- ♿️(frontend) Improved accessibility by adding proper labels #26
 - 🧹(backend) Made role selection deterministic #18
 - 🧹(backend) Removed random role and made condition deterministic #9
 - ♿️(frontend) adjust visual-only tooltip a11y labels #910

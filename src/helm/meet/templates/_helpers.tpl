@@ -228,19 +228,6 @@ data:
 {{- end -}}
 {{- end }}
 
-{{- define "chart.clusterSecretStore" -}}
-apiVersion: external-secrets.io/v1beta1
-kind: ClusterSecretStore
-metadata:
-  name: {{ .name }}
-spec:
-  provider:
-    webhook:
-      url: {{ .baseUrl }}/{{ .endpoint }}
-      headers:
-        - name: Authorization
-          value: {{ .authHeader }}
-{{- end }}
 {{/*
 Return the appropriate ingress apiVersion based on cluster capabilities.
 */}}
@@ -266,6 +253,23 @@ service:
     number: {{ .svcPort }}
 {{- else }}
 serviceName: {{ .svcName }}
+servicePort: {{ .svcPort }}
+{{- end }}
+{{- end }}
+
+{{/*
+Render a posthog proxy ingress backend block based on cluster version.
+Usage: include "meet.ingress.posthog.backend" (dict
+  "proxyName" "x" "svcPort" 80 "cap" .Capabilities)
+*/}}
+{{- define "meet.ingress.posthog.backend" -}}
+{{- if semverCompare ">=1.19-0" .cap.KubeVersion.GitVersion }}
+service:
+  name: {{ .proxyName }}
+  port:
+    number: {{ .svcPort }}
+{{- else }}
+serviceName: {{ .proxyName }}
 servicePort: {{ .svcPort }}
 {{- end }}
 {{- end }}
