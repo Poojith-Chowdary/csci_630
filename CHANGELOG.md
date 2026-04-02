@@ -7,7 +7,9 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+- Deduplicated posthog ingress version and backend logic via
+  named helpers in `_helpers.tpl` (issue #24)
+  
 ### Changed
 - Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
   into a reusable named template via `range` loop (issue #22)
