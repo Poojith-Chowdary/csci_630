@@ -7,7 +7,7 @@ const HSL_HUE = '(?:36[0]|3[0-5][0-9]|[12][0-9]{2}|[1-9][0-9]|[0-9])'
 const HSL_SAT = '(?:7[0-5]|[5-6][0-9]|50)'
 const HSL_LIT = '(?:60|[2-5][0-9])'
 const HSL_REGEX = new RegExp(
-  `^hsl\\(${HSL_HUE},\\s*${HSL_SAT}%,\\s*${HSL_LIT}%\\)$`
+  String.raw`^hsl\(${HSL_HUE},\s*${HSL_SAT}%,\s*${HSL_LIT}%\)$`
 )
 
 export const getParticipantColor = (participant: Participant): string => {
