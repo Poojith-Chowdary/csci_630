@@ -7,8 +7,15 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+- Deduplicated posthog ingress version and backend logic via
+  named helpers in `_helpers.tpl` (issue #24)
+  - Deduplicated ingress admin version and backend logic via
+  named helpers in `_helpers.tpl` (issue #23)
+- Simplified HSL regex and refactored getParticipantColor to use
+  optional chaining; removed isValidHsl helper (issue #25)
 ### Changed
+- Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
+  into a reusable named template via `range` loop (issue #22)
 - Consolidate duplicate log formatting in `bin/prepare-release.sh` 
  into a single `print_msg` helper (SonarQube smell fix)
 
@@ -23,6 +30,8 @@ and this project adheres to
 ### Changed
 
 - 🧹 (frontend) Resolved code smell for  SettingsDialogExtended (Closes #30)
+- 🧹 (frontend) Refactor background processor init/state #33
+- 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
 - 🧹 (frontend) Refactor SettingsDialogExtended layout styles (Closes #30)
 - 🧹 (infra) Centralized docker compose `--user` handling (Closes #29)
 - 🔒️ (infra) Avoid writing Vaultwarden credentials (Closes #28)
