@@ -28,11 +28,6 @@ import { NotificationsTab } from './tabs/NotificationsTab'
 import { TranscriptionTab } from './tabs/TranscriptionTab'
 import { VideoTab } from './tabs/VideoTab'
 
-/**
- * Layout constants (single source of truth)
- * - Replaces “fixme” magic numbers with named constants.
- * - Keeps existing behavior while making values easy to audit/change.
- */
 const DIALOG_WIDTH_REM = 50
 const DIALOG_MAX_HEIGHT_REM = 40.625
 const DIALOG_MARGIN_Y_REM = -1

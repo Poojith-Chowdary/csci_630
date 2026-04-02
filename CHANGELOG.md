@@ -14,6 +14,10 @@ and this project adheres to
 
 - Use Kubernetes Secret for MinIO credentials in minio.yaml
 
+- 🧹(frontend) Use regex literal for HSL validation (SonarQube smell fix) #25
+
+- 🧹(frontend) Remove stale "fixme" JSDoc comment (SonarQube smell fix) #46
+
 ## [1.5.0] - 2026-01-28
 ### Added
 - ♿️(frontend) Stabilize language switching e2e and html lang #8
