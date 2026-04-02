@@ -29,6 +29,7 @@ and this project adheres to
 
 ### Changed
 
+- 🧹 (frontend) Resolved code smell #30
 - 🧹 (frontend) Refactor background processor init/state #33
 - 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
 - 🧹 (backend) Remove redundant `help_text`/`verbose_name` #31
