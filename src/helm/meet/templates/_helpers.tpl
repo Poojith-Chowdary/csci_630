@@ -229,6 +229,35 @@ data:
 {{- end }}
 
 {{/*
+Return the appropriate ingress apiVersion based on cluster capabilities.
+*/}}
+{{- define "meet.ingress.apiVersion" -}}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1beta1
+{{- else -}}
+extensions/v1beta1
+{{- end -}}
+{{- end }}
+
+{{/*
+Render an ingress backend block based on cluster version.
+Usage: include "meet.ingress.backend" (dict "svcName" "x" "svcPort" 80 "cap" .Capabilities)
+*/}}
+{{- define "meet.ingress.backend" -}}
+{{- if semverCompare ">=1.19-0" .cap.KubeVersion.GitVersion }}
+service:
+  name: {{ .svcName }}
+  port:
+    number: {{ .svcPort }}
+{{- else }}
+serviceName: {{ .svcName }}
+servicePort: {{ .svcPort }}
+{{- end }}
+{{- end }}
+
+{{/*
 Render a posthog proxy ingress backend block based on cluster version.
 Usage: include "meet.ingress.posthog.backend" (dict
   "proxyName" "x" "svcPort" 80 "cap" .Capabilities)

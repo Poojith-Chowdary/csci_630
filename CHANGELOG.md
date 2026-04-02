@@ -9,7 +9,9 @@ and this project adheres to
 ## [Unreleased]
 - Deduplicated posthog ingress version and backend logic via
   named helpers in `_helpers.tpl` (issue #24)
-  
+  - Deduplicated ingress admin version and backend logic via
+  named helpers in `_helpers.tpl` (issue #23)
+
 ### Changed
 - Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
   into a reusable named template via `range` loop (issue #22)
