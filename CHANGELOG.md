@@ -11,7 +11,8 @@ and this project adheres to
   named helpers in `_helpers.tpl` (issue #24)
   - Deduplicated ingress admin version and backend logic via
   named helpers in `_helpers.tpl` (issue #23)
-
+- Simplified HSL regex and refactored getParticipantColor to use
+  optional chaining; removed isValidHsl helper (issue #25)
 ### Changed
 - Refactored `ClusterSecretStore` blocks in `clustersecretstore.yaml`
   into a reusable named template via `range` loop (issue #22)
