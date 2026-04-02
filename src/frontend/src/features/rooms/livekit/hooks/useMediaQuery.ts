@@ -1,45 +1,50 @@
-import * as React from 'react'
+import { useEffect, useState } from 'react'
+
 /**
  * Implementation used from https://github.com/juliencrn/usehooks-ts
+ * Updated to be SSR-safe and use modern matchMedia addEventListener API.
  *
  * @internal
  */
+
+const getMatchMedia = (): Window['matchMedia'] | undefined =>
+  globalThis.window?.matchMedia
+
+const getMatches = (query: string): boolean => {
+  const matchMedia = getMatchMedia()
+  if (typeof matchMedia !== 'function') return false
+  return matchMedia(query).matches
+}
+
 export function useMediaQuery(query: string): boolean {
-  const getMatches = (query: string): boolean => {
-    // Prevents SSR issues
-    if (typeof window !== 'undefined') {
-      return window.matchMedia(query).matches
-    }
-    return false
-  }
+  const [matches, setMatches] = useState<boolean>(() => getMatches(query))
 
-  const [matches, setMatches] = React.useState<boolean>(getMatches(query))
+  useEffect(() => {
+    const matchMedia = getMatchMedia()
+    if (typeof matchMedia !== 'function') return
 
-  function handleChange() {
-    setMatches(getMatches(query))
-  }
+    const mql = matchMedia(query)
+    setMatches(mql.matches)
 
-  React.useEffect(() => {
-    const matchMedia = window.matchMedia(query)
-
-    // Triggered at the first client-side load and if query changes
-    handleChange()
-
-    // Listen matchMedia
-    if (matchMedia.addListener) {
-      matchMedia.addListener(handleChange)
-    } else {
-      matchMedia.addEventListener('change', handleChange)
+    const onChange = (event: MediaQueryListEvent) => {
+      setMatches(event.matches)
     }
 
-    return () => {
-      if (matchMedia.removeListener) {
-        matchMedia.removeListener(handleChange)
-      } else {
-        matchMedia.removeEventListener('change', handleChange)
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', onChange)
+      return () => {
+        mql.removeEventListener('change', onChange)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const legacy = mql as {
+      addListener?: (cb: (e: MediaQueryListEvent) => void) => void
+      removeListener?: (cb: (e: MediaQueryListEvent) => void) => void
+    }
+    legacy.addListener?.(onChange)
+    return () => {
+      legacy.removeListener?.(onChange)
+    }
   }, [query])
 
   return matches

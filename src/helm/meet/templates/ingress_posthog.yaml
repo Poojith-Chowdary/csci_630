@@ -1,17 +1,14 @@
 {{- if .Values.posthog.ingress.enabled -}}
 {{- $fullName := include "meet.fullname" . -}}
-{{- if and .Values.posthog.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+{{- $kubeVersion := .Capabilities.KubeVersion.GitVersion -}}
+{{- $proxyName := printf "%s-proxy" (include "meet.posthog.fullname" .) -}}
+{{- $backendArgs := dict "proxyName" $proxyName "svcPort" .Values.posthog.service.port "cap" .Capabilities -}}
+{{- if and .Values.posthog.ingress.className (not (semverCompare ">=1.18-0" $kubeVersion)) }}
   {{- if not (hasKey .Values.posthog.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.posthog.ingress.annotations "kubernetes.io/ingress.class" .Values.posthog.ingress.className}}
   {{- end }}
 {{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
+apiVersion: {{ include "meet.ingress.apiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}-posthog
@@ -23,7 +20,7 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.posthog.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  {{- if and .Values.posthog.ingress.className (semverCompare ">=1.18-0" $kubeVersion) }}
   ingressClassName: {{ .Values.posthog.ingress.className }}
   {{- end }}
   {{- if .Values.posthog.ingress.tls.enabled }}
@@ -47,41 +44,24 @@ spec:
       http:
         paths:
           - path: {{ .Values.posthog.ingress.path }}
-            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if semverCompare ">=1.18-0" $kubeVersion }}
             pathType: Prefix
             {{- end }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
-              service:
-                name: {{ include "meet.posthog.fullname" . }}-proxy
-                port:
-                  number: {{ .Values.posthog.service.port }}
-              {{- else }}
-              serviceName: {{ include "meet.posthog.fullname" . }}-proxy
-              servicePort: {{ .Values.posthog.service.port }}
-            {{- end }}
+              {{- include "meet.ingress.posthog.backend" $backendArgs | nindent 14 }}
     {{- end }}
     {{- range .Values.posthog.ingress.hosts }}
     - host: {{ . | quote }}
       http:
         paths:
           - path: {{ $.Values.posthog.ingress.path | quote }}
-          {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
             pathType: Prefix
-          {{- end }}
+            {{- end }}
             backend:
-            {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
-              service:
-                name: {{ include "meet.posthog.fullname" . }}-proxy
-                port:
-                  number: {{ $.Values.posthog.service.port }}
-            {{- else }}
-              serviceName: {{ include "meet.posthog.fullname" . }}-proxy
-              servicePort: {{ $.Values.posthog.service.port }}
-          {{- end }}
+              {{- include "meet.ingress.posthog.backend" $backendArgs | nindent 14 }}
         {{- with $.Values.posthog.assetsService.customBackends }}
           {{- toYaml . | nindent 10 }}
         {{- end }}
-  {{- end }}
+    {{- end }}
 {{- end }}
-
