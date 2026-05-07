@@ -22,6 +22,8 @@ from django.utils.translation import gettext_lazy as _
 from lasuite.tools.email import get_domain_from_email
 from timezone_field import TimeZoneField
 
+from core.recording.lifecycle import get_recording_lifecycle_state
+
 from . import fields, utils
 from .recording.enums import FileExtension
 
@@ -625,20 +627,13 @@ class Recording(BaseModel):
         }
 
     def is_savable(self) -> bool:
-        """Determine if the recording can be saved based on its current status."""
-
-        return self.status in {
-            RecordingStatusChoices.ACTIVE,
-            RecordingStatusChoices.STOPPED,
-        }
+        """Determine if the recording can be saved based on its lifecycle state."""
+        return self.lifecycle_state.is_savable()
 
     @property
     def is_saved(self) -> bool:
-        """Check if the recording is in a saved state."""
-        return self.status in {
-            RecordingStatusChoices.NOTIFICATION_SUCCEEDED,
-            RecordingStatusChoices.SAVED,
-        }
+        """Check if the recording is in a saved lifecycle state."""
+        return self.lifecycle_state.is_saved()
 
     @property
     def extension(self):
@@ -682,6 +677,11 @@ class Recording(BaseModel):
             return False
 
         return self.expired_at < timezone.now()
+
+    @property
+    def lifecycle_state(self):
+        """Return the lifecycle state object for this recording."""
+        return get_recording_lifecycle_state(self.status)
 
 
 class RecordingAccess(BaseAccess):
