@@ -43,7 +43,11 @@ RUN apk update && apk upgrade libssl3 \
     libxml2>=2.12.7-r2 \
     libxslt>=1.1.39-r2 \
     libexpat>=2.7.2-r0 \
-    libpng>=1.6.53-r0
+    libpng>=1.6.53-r0 \
+    musl>=1.2.5-r11 \
+    musl-utils>=1.2.5-r11 \
+    nghttp2-libs>=1.68.1-r0 \
+    zlib>=1.3.2-r0
 
 USER nginx
 
