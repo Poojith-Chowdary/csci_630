@@ -7,6 +7,8 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- ✨(frontend) extract PanelToggleButton to eliminate duplicated
+  panel toggle structure (issue #54)
 - ✨(frontend) replace custom debounce with useDebounceValue from usehooks-ts
 - Deduplicated posthog ingress version and backend logic via
   named helpers in `_helpers.tpl` (issue #24)

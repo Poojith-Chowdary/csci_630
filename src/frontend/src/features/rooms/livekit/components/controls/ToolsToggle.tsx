@@ -1,9 +1,8 @@
-import { ToggleButton } from '@/primitives'
-import { RiShapesLine } from '@remixicon/react'
 import { useTranslation } from 'react-i18next'
+import { RiShapesLine } from '@remixicon/react'
 import { useSidePanel } from '../../hooks/useSidePanel'
-import { css } from '@/styled-system/css'
 import { ToggleButtonProps } from '@/primitives/ToggleButton'
+import { PanelToggleButton } from './PanelToggleButton'
 
 export const ToolsToggle = ({
   variant = 'primaryTextDark',
@@ -11,32 +10,20 @@ export const ToolsToggle = ({
   ...props
 }: ToggleButtonProps) => {
   const { t } = useTranslation('rooms', { keyPrefix: 'controls.tools' })
-
   const { isToolsOpen, toggleTools } = useSidePanel()
   const tooltipLabel = isToolsOpen ? 'open' : 'closed'
 
   return (
-    <div
-      className={css({
-        position: 'relative',
-        display: 'inline-block',
-      })}
-    >
-      <ToggleButton
-        square
-        variant={variant}
-        aria-label={t(tooltipLabel)}
-        tooltip={t(tooltipLabel)}
-        isSelected={isToolsOpen}
-        onPress={(e) => {
-          toggleTools()
-          onPress?.(e)
-        }}
-        {...props}
-        data-attr="toggle-tools"
-      >
-        <RiShapesLine />
-      </ToggleButton>
-    </div>
+    <PanelToggleButton
+      isSelected={isToolsOpen}
+      onToggle={toggleTools}
+      ariaLabel={t(tooltipLabel)}
+      tooltip={t(tooltipLabel)}
+      dataAttr="toggle-tools"
+      icon={<RiShapesLine />}
+      variant={variant}
+      onPress={onPress}
+      {...props}
+    />
   )
 }
