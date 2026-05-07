@@ -7,6 +7,8 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+- ✨(rooms) facade hooks to narrow useRoomContext coupling (issue #55)
 - ✨(frontend) extract PanelToggleButton to eliminate duplicated
   panel toggle structure (issue #54)
 - ✨(frontend) replace custom debounce with useDebounceValue from usehooks-ts

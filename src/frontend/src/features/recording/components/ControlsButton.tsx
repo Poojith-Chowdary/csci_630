@@ -5,7 +5,7 @@ import { Button, Icon, Text } from '@/primitives'
 import { useTranslation } from 'react-i18next'
 import { RecordingStatuses } from '../hooks/useRecordingStatuses'
 import { ReactNode, useEffect, useRef, useState } from 'react'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomConnectionState } from '@/features/rooms/livekit/hooks/useRoomConnectionState'
 import { ConnectionState } from 'livekit-client'
 import { Button as RACButton } from 'react-aria-components'
 import { parseLineBreaks } from '@/utils/parseLineBreaks'
@@ -53,8 +53,8 @@ export const ControlsButton = ({
     })
   }, [])
 
-  const room = useRoomContext()
-  const isRoomConnected = room.state == ConnectionState.Connected
+  const roomState = useRoomConnectionState()
+  const isRoomConnected = roomState == ConnectionState.Connected
 
   const [showSaving, setShowSaving] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout>()

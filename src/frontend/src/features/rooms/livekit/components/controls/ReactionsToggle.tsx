@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { RiEmotionLine } from '@remixicon/react'
 import { useState, useRef, useEffect } from 'react'
 import { css } from '@/styled-system/css'
-import { useRoomContext } from '@livekit/components-react'
+import { useLocalParticipant } from '../../hooks/useLocalParticipant'
 import { ToggleButton, Button } from '@/primitives'
 import { NotificationType } from '@/features/notifications/NotificationType'
 import { NotificationPayload } from '@/features/notifications/NotificationPayload'
@@ -37,7 +37,7 @@ export const ReactionsToggle = () => {
   const { t } = useTranslation('rooms', { keyPrefix: 'controls.reactions' })
   const [reactions, setReactions] = useState<Reaction[]>([])
   const instanceIdRef = useRef(0)
-  const room = useRoomContext()
+  const localParticipant = useLocalParticipant()
 
   const [isVisible, setIsVisible] = useState(false)
 
@@ -50,12 +50,12 @@ export const ReactionsToggle = () => {
       },
     }
     const data = encoder.encode(JSON.stringify(payload))
-    await room.localParticipant.publishData(data, { reliable: true })
+    await localParticipant.publishData(data, { reliable: true })
 
     const newReaction = {
       id: instanceIdRef.current++,
       emoji,
-      participant: room.localParticipant,
+      participant: localParticipant,
     }
     setReactions((prev) => [...prev, newReaction])
 
