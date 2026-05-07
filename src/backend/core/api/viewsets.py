@@ -51,10 +51,8 @@ from core.services.lobby import (
     LobbyParticipantNotFound,
     LobbyService,
 )
-from core.services.participants_management import (
-    ParticipantsManagement,
-    ParticipantsManagementException,
-)
+from core.services.participants_management import ParticipantsManagementException
+from core.services.room_actions import RoomActionsFacade
 from core.services.room_creation import RoomCreation
 from core.services.subtitle import SubtitleException, SubtitleService
 
@@ -251,6 +249,10 @@ class RoomViewSet(
         # May raise a permission denied
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def get_room_actions_facade(self):
+        """Return the facade for room action orchestration."""
+        return RoomActionsFacade()
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -604,14 +606,13 @@ class RoomViewSet(
     def mute_participant(self, request, pk=None):  # pylint: disable=unused-argument
         """Mute a specific track for a participant in the room."""
         room = self.get_object()
-
         serializer = serializers.MuteParticipantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
-            ParticipantsManagement().mute(
-                room_name=str(room.pk),
-                identity=str(serializer.validated_data["participant_identity"]),
+            self.get_room_actions_facade().mute_participant(
+                room=room,
+                participant_identity=serializer.validated_data["participant_identity"],
                 track_sid=serializer.validated_data["track_sid"],
             )
         except ParticipantsManagementException as exc:
@@ -623,6 +624,7 @@ class RoomViewSet(
                     {"message": "Participant not found."},
                     status=drf_status.HTTP_404_NOT_FOUND,
                 )
+
             return drf_response.Response(
                 {"error": "Failed to mute participant"},
                 status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -645,18 +647,17 @@ class RoomViewSet(
     def update_participant(self, request, pk=None):  # pylint: disable=unused-argument
         """Update participant attributes, permissions, or metadata."""
         room = self.get_object()
-
         serializer = serializers.UpdateParticipantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
-            ParticipantsManagement().update(
-                room_name=str(room.pk),
-                identity=str(serializer.validated_data["participant_identity"]),
-                metadata=serializer.validated_data.get("metadata"),
-                attributes=serializer.validated_data.get("attributes"),
-                permission=serializer.validated_data.get("permission"),
-                name=serializer.validated_data.get("name"),
+            participant_data = serializer.validated_data.copy()
+            participant_identity = participant_data.pop("participant_identity")
+
+            self.get_room_actions_facade().update_participant(
+                room=room,
+                participant_identity=participant_identity,
+                participant_data=participant_data,
             )
         except ParticipantsManagementException as exc:
             status_code = getattr(
@@ -667,6 +668,7 @@ class RoomViewSet(
                     {"error": "Participant not found"},
                     status=drf_status.HTTP_404_NOT_FOUND,
                 )
+
             return drf_response.Response(
                 {"error": "Failed to update participant"},
                 status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -689,14 +691,13 @@ class RoomViewSet(
     def remove_participant(self, request, pk=None):  # pylint: disable=unused-argument
         """Remove a participant from the room."""
         room = self.get_object()
-
         serializer = serializers.BaseParticipantsManagementSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
-            ParticipantsManagement().remove(
-                room_name=str(room.pk),
-                identity=str(serializer.validated_data["participant_identity"]),
+            self.get_room_actions_facade().remove_participant(
+                room=room,
+                participant_identity=serializer.validated_data["participant_identity"],
             )
         except ParticipantsManagementException as exc:
             status_code = getattr(
@@ -707,13 +708,15 @@ class RoomViewSet(
                     {"error": "Participant not found"},
                     status=drf_status.HTTP_404_NOT_FOUND,
                 )
+
             return drf_response.Response(
                 {"error": "Failed to remove participant"},
                 status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         return drf_response.Response(
-            {"status": "success"}, status=drf_status.HTTP_200_OK
+            {"status": "success"},
+            status=drf_status.HTTP_200_OK,
         )
 
 
