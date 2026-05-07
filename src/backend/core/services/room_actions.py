@@ -19,24 +19,15 @@ class RoomParticipantActions:
             track_sid=track_sid,
         )
 
-    def update(
-        self,
-        *,
-        room,
-        participant_identity,
-        metadata=None,
-        attributes=None,
-        permission=None,
-        name=None,
-    ):
+    def update(self, *, room, participant_identity, participant_data):
         """Update participant attributes, permissions, metadata, or display name."""
         self.participants_management.update(
             room_name=str(room.pk),
             identity=str(participant_identity),
-            metadata=metadata,
-            attributes=attributes,
-            permission=permission,
-            name=name,
+            metadata=participant_data.get("metadata"),
+            attributes=participant_data.get("attributes"),
+            permission=participant_data.get("permission"),
+            name=participant_data.get("name"),
         )
 
     def remove(self, *, room, participant_identity):
@@ -65,24 +56,12 @@ class RoomActionsFacade:
             track_sid=track_sid,
         )
 
-    def update_participant(
-        self,
-        *,
-        room,
-        participant_identity,
-        metadata=None,
-        attributes=None,
-        permission=None,
-        name=None,
-    ):
+    def update_participant(self, *, room, participant_identity, participant_data):
         """Update participant data in a room."""
         self.participant_actions.update(
             room=room,
             participant_identity=participant_identity,
-            metadata=metadata,
-            attributes=attributes,
-            permission=permission,
-            name=name,
+            participant_data=participant_data,
         )
 
     def remove_participant(self, *, room, participant_identity):

@@ -53,7 +53,6 @@ from core.services.lobby import (
 )
 from core.services.participants_management import ParticipantsManagementException
 from core.services.room_actions import RoomActionsFacade
-
 from core.services.room_creation import RoomCreation
 from core.services.subtitle import SubtitleException, SubtitleService
 
@@ -652,13 +651,13 @@ class RoomViewSet(
         serializer.is_valid(raise_exception=True)
 
         try:
+            participant_data = serializer.validated_data.copy()
+            participant_identity = participant_data.pop("participant_identity")
+
             self.get_room_actions_facade().update_participant(
                 room=room,
-                participant_identity=serializer.validated_data["participant_identity"],
-                metadata=serializer.validated_data.get("metadata"),
-                attributes=serializer.validated_data.get("attributes"),
-                permission=serializer.validated_data.get("permission"),
-                name=serializer.validated_data.get("name"),
+                participant_identity=participant_identity,
+                participant_data=participant_data,
             )
         except ParticipantsManagementException as exc:
             status_code = getattr(
