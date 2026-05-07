@@ -29,14 +29,21 @@ def _livekit_client():
     return client
 
 
-def test_mute_uses_shared_livekit_lifecycle(monkeypatch):
-    """Mute should create, use, and close the LiveKit client."""
-    client = _livekit_client()
+def _mock_livekit_client(monkeypatch, client):
+    """Mock LiveKit client creation and return the mock factory."""
+    create_livekit_client = mock.Mock(return_value=client)
     monkeypatch.setattr(
         participants_module.utils,
         "create_livekit_client",
-        mock.Mock(return_value=client),
+        create_livekit_client,
     )
+    return create_livekit_client
+
+
+def test_mute_uses_shared_livekit_lifecycle(monkeypatch):
+    """Mute should create, use, and close the LiveKit client."""
+    client = _livekit_client()
+    create_livekit_client = _mock_livekit_client(monkeypatch, client)
 
     ParticipantsManagement().mute(
         room_name="room-id",
@@ -44,7 +51,7 @@ def test_mute_uses_shared_livekit_lifecycle(monkeypatch):
         track_sid="track-id",
     )
 
-    participants_module.utils.create_livekit_client.assert_called_once_with()
+    create_livekit_client.assert_called_once_with()
     client.room.mute_published_track.assert_awaited_once()
     client.aclose.assert_awaited_once()
 
@@ -52,18 +59,14 @@ def test_mute_uses_shared_livekit_lifecycle(monkeypatch):
 def test_remove_uses_shared_livekit_lifecycle(monkeypatch):
     """Remove should create, use, and close the LiveKit client."""
     client = _livekit_client()
-    monkeypatch.setattr(
-        participants_module.utils,
-        "create_livekit_client",
-        mock.Mock(return_value=client),
-    )
+    create_livekit_client = _mock_livekit_client(monkeypatch, client)
 
     ParticipantsManagement().remove(
         room_name="not-a-uuid",
         identity="participant-id",
     )
 
-    participants_module.utils.create_livekit_client.assert_called_once_with()
+    create_livekit_client.assert_called_once_with()
     client.room.remove_participant.assert_awaited_once()
     client.aclose.assert_awaited_once()
 
@@ -71,11 +74,7 @@ def test_remove_uses_shared_livekit_lifecycle(monkeypatch):
 def test_update_uses_shared_livekit_lifecycle(monkeypatch):
     """Update should create, use, and close the LiveKit client."""
     client = _livekit_client()
-    monkeypatch.setattr(
-        participants_module.utils,
-        "create_livekit_client",
-        mock.Mock(return_value=client),
-    )
+    create_livekit_client = _mock_livekit_client(monkeypatch, client)
 
     ParticipantsManagement().update(
         room_name="room-id",
@@ -86,7 +85,7 @@ def test_update_uses_shared_livekit_lifecycle(monkeypatch):
         name="Jane Doe",
     )
 
-    participants_module.utils.create_livekit_client.assert_called_once_with()
+    create_livekit_client.assert_called_once_with()
     client.room.update_participant.assert_awaited_once()
     client.aclose.assert_awaited_once()
 
@@ -97,11 +96,7 @@ def test_livekit_404_error_is_translated_and_client_is_closed(monkeypatch):
     client.room.mute_published_track.side_effect = FakeTwirpError(status=404)
 
     monkeypatch.setattr(participants_module, "TwirpError", FakeTwirpError)
-    monkeypatch.setattr(
-        participants_module.utils,
-        "create_livekit_client",
-        mock.Mock(return_value=client),
-    )
+    _mock_livekit_client(monkeypatch, client)
 
     with pytest.raises(ParticipantsManagementException) as exc_info:
         ParticipantsManagement().mute(
@@ -121,11 +116,7 @@ def test_livekit_non_404_error_is_translated_to_500(monkeypatch):
     client.room.update_participant.side_effect = FakeTwirpError(status=503)
 
     monkeypatch.setattr(participants_module, "TwirpError", FakeTwirpError)
-    monkeypatch.setattr(
-        participants_module.utils,
-        "create_livekit_client",
-        mock.Mock(return_value=client),
-    )
+    _mock_livekit_client(monkeypatch, client)
 
     with pytest.raises(ParticipantsManagementException) as exc_info:
         ParticipantsManagement().update(
