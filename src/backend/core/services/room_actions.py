@@ -7,7 +7,9 @@ class RoomParticipantActions:
     """Coordinate participant-management workflows for rooms."""
 
     def __init__(self, participants_management=None):
-        self.participants_management = participants_management or ParticipantsManagement()
+        self.participants_management = (
+            participants_management or ParticipantsManagement()
+        )
 
     def mute(self, *, room, participant_identity, track_sid):
         """Mute a participant track in a room."""

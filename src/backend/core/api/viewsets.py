@@ -250,7 +250,7 @@ class RoomViewSet(
         # May raise a permission denied
         self.check_object_permissions(self.request, obj)
         return obj
-    
+
     def get_room_actions_facade(self):
         """Return the facade for room action orchestration."""
         return RoomActionsFacade()
@@ -604,7 +604,6 @@ class RoomViewSet(
         url_name="mute-participant",
         permission_classes=[permissions.HasPrivilegesOnRoom],
     )
-
     def mute_participant(self, request, pk=None):  # pylint: disable=unused-argument
         """Mute a specific track for a participant in the room."""
         room = self.get_object()
@@ -646,7 +645,6 @@ class RoomViewSet(
         url_name="update-participant",
         permission_classes=[permissions.HasPrivilegesOnRoom],
     )
-
     def update_participant(self, request, pk=None):  # pylint: disable=unused-argument
         """Update participant attributes, permissions, or metadata."""
         room = self.get_object()
@@ -691,7 +689,6 @@ class RoomViewSet(
         url_name="remove-participant",
         permission_classes=[permissions.HasPrivilegesOnRoom],
     )
-
     def remove_participant(self, request, pk=None):  # pylint: disable=unused-argument
         """Remove a participant from the room."""
         room = self.get_object()
