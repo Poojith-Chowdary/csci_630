@@ -18,9 +18,9 @@ WORKDIR /builder
 # Copy required python dependencies
 COPY ./src/backend /builder
 
-RUN mkdir /install && \
-  pip install --prefix=/install . && \
-  pip install --prefix=/install "Django==5.2.13"
+RUN sed -i 's/django==5\.2\.12/django==5.2.13/g' pyproject.toml && \
+  mkdir /install && \
+  pip install --prefix=/install .
 
 # ---- mails ----
 FROM node:20 AS mail-builder
