@@ -19,8 +19,8 @@ WORKDIR /builder
 COPY ./src/backend /builder
 
 RUN mkdir /install && \
-  pip install --prefix=/install .
-
+  pip install --prefix=/install . && \
+  pip install --prefix=/install "Django==5.2.13"
 
 # ---- mails ----
 FROM node:20 AS mail-builder
