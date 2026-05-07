@@ -4,8 +4,6 @@ from dataclasses import dataclass
 from unittest import mock
 from uuid import uuid4
 
-from django.conf import settings
-
 import pytest
 
 from core.services import lobby as lobby_module
@@ -24,8 +22,10 @@ class Participant:
     status: LobbyParticipantStatus
 
 
-def test_lobby_decision_factory_returns_accepted_state():
+def test_lobby_decision_factory_returns_accepted_state(settings):
     """Allowed entry should create an accepted lobby state."""
+    settings.LOBBY_ACCEPTED_TIMEOUT = "accepted-timeout"
+
     state = LobbyParticipantDecisionStateFactory(
         accepted_status=LobbyParticipantStatus.ACCEPTED,
         denied_status=LobbyParticipantStatus.DENIED,
@@ -36,11 +36,13 @@ def test_lobby_decision_factory_returns_accepted_state():
     updated_participant = state.apply_to(participant)
 
     assert updated_participant.status == LobbyParticipantStatus.ACCEPTED
-    assert state.cache_timeout() == settings.LOBBY_ACCEPTED_TIMEOUT
+    assert state.cache_timeout() == "accepted-timeout"
 
 
-def test_lobby_decision_factory_returns_denied_state():
+def test_lobby_decision_factory_returns_denied_state(settings):
     """Denied entry should create a denied lobby state."""
+    settings.LOBBY_DENIED_TIMEOUT = "denied-timeout"
+
     state = LobbyParticipantDecisionStateFactory(
         accepted_status=LobbyParticipantStatus.ACCEPTED,
         denied_status=LobbyParticipantStatus.DENIED,
@@ -51,7 +53,7 @@ def test_lobby_decision_factory_returns_denied_state():
     updated_participant = state.apply_to(participant)
 
     assert updated_participant.status == LobbyParticipantStatus.DENIED
-    assert state.cache_timeout() == settings.LOBBY_DENIED_TIMEOUT
+    assert state.cache_timeout() == "denied-timeout"
 
 
 @pytest.mark.parametrize(
@@ -73,8 +75,7 @@ def test_handle_participant_entry_applies_decision_state(
 
     room_id = uuid4()
     participant_id = "participant-id"
-    service = LobbyService()
-    cache_key = service._get_cache_key(room_id, participant_id)
+    cache_key = f"room_lobby_{room_id}_{participant_id}"
 
     participant = LobbyParticipant(
         status=LobbyParticipantStatus.WAITING,
@@ -89,7 +90,7 @@ def test_handle_participant_entry_applies_decision_state(
     ):
         cache_get.return_value = participant.to_dict()
 
-        service.handle_participant_entry(
+        LobbyService().handle_participant_entry(
             room_id=room_id,
             participant_id=participant_id,
             allow_entry=allow_entry,
