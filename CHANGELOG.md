@@ -28,6 +28,7 @@ and this project adheres to
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
+- ♻️ (backend) Consolidate room permission checks with authorization strategies #62
 - ♻️ (backend) Delegate recording save lifecycle rules to state objects #61
 - 🧹 (backend) Build frontend settings through a configuration builder #60
 - ♻️ (backend) Refactor room participant actions behind a facade #59

@@ -2,7 +2,12 @@
 
 from rest_framework import permissions
 
-from ..models import RoleChoices
+from core.api.authorization_strategies import (
+    ResourceOwnerDeleteStrategy,
+    ResourceRoomPrivilegeStrategy,
+    RoomOwnerStrategy,
+    RoomPrivilegeStrategy,
+)
 
 ACTION_FOR_METHOD_TO_PERMISSION = {
     "versions_detail": {"DELETE": "versions_destroy", "GET": "versions_retrieve"}
@@ -40,9 +45,10 @@ class IsSelf(IsAuthenticated):
 
 
 class RoomPermissions(permissions.BasePermission):
-    """
-    Permissions applying to the room API endpoint.
-    """
+    """Permissions applying to the room API endpoint."""
+
+    room_privilege_strategy = RoomPrivilegeStrategy()
+    room_owner_strategy = RoomOwnerStrategy()
 
     def has_permission(self, request, view):
         """Only allow authenticated users for unsafe methods."""
@@ -53,32 +59,39 @@ class RoomPermissions(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Object permissions are only given to administrators of the room."""
-
         if request.method in permissions.SAFE_METHODS:
             return True
 
         user = request.user
-
         if request.method == "DELETE":
-            return obj.is_owner(user)
+            return self.room_owner_strategy.has_access(user=user, room=obj)
 
-        return obj.is_administrator_or_owner(user)
+        return self.room_privilege_strategy.has_access(user=user, room=obj)
 
 
 class ResourceAccessPermission(IsAuthenticated):
-    """
-    Permissions for a room that can only be updated by room administrators.
-    """
+    """Permissions for a room that can only be updated by room administrators."""
+
+    owner_delete_strategy = ResourceOwnerDeleteStrategy()
+    room_privilege_strategy = ResourceRoomPrivilegeStrategy()
 
     def has_object_permission(self, request, view, obj):
-        """
-        Check that the logged-in user is administrator of the linked room.
-        """
+        """Check that the logged-in user is administrator of the linked room."""
         user = request.user
-        if request.method == "DELETE" and obj.role == RoleChoices.OWNER:
-            return obj.user == user
 
-        return obj.resource.is_administrator_or_owner(user)
+        if self.owner_delete_strategy.applies_to(
+            method=request.method,
+            resource_access=obj,
+        ):
+            return self.owner_delete_strategy.has_access(
+                user=user,
+                resource_access=obj,
+            )
+
+        return self.room_privilege_strategy.has_access(
+            user=user,
+            resource_access=obj,
+        )
 
 
 class HasAbilityPermission(IsAuthenticated):
@@ -94,9 +107,14 @@ class HasPrivilegesOnRoom(IsAuthenticated):
 
     message = "You must have privileges on room to perform this action."
 
+    room_privilege_strategy = RoomPrivilegeStrategy()
+
     def has_object_permission(self, request, view, obj):
         """Determine if user has privileges on room."""
-        return obj.is_administrator_or_owner(request.user)
+        return self.room_privilege_strategy.has_access(
+            user=request.user,
+            room=obj,
+        )
 
 
 class HasLiveKitRoomAccess(permissions.BasePermission):
