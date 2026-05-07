@@ -28,6 +28,7 @@ and this project adheres to
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
+- ♻️ (backend) Unify participant LiveKit operations with template method #63
 - ♻️ (backend) Consolidate room permission checks with strategies #62
 - ♻️ (backend) Delegate recording save lifecycle rules to state objects #61
 - 🧹 (backend) Build frontend settings through a configuration builder #60
