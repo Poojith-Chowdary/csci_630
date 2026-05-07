@@ -28,7 +28,7 @@ and this project adheres to
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
-
+- 🧹 (backend) Build frontend settings through a configuration builder #60
 - 🧹 (frontend) Resolved code smell #30
 - 🧹 (frontend) Refactor background processor init/state #33
 - 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
