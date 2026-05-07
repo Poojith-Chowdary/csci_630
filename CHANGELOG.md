@@ -28,6 +28,7 @@ and this project adheres to
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
+- ♻️ (backend) Move lobby participant decisions into state objects #64
 - ♻️ (backend) Unify participant LiveKit operations with template method #63
 - ♻️ (backend) Consolidate room permission checks with strategies #62
 - ♻️ (backend) Delegate recording save lifecycle rules to state objects #61

@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from core import models, utils
+from core.services.lobby_states import LobbyParticipantDecisionStateFactory
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,14 @@ class LobbyService:
         return room.is_public or (
             room.access_level == models.RoomAccessLevel.TRUSTED
             and user.is_authenticated
+        )
+
+    @staticmethod
+    def _get_decision_state_factory():
+        """Return the state factory for lobby entry decisions."""
+        return LobbyParticipantDecisionStateFactory(
+            accepted_status=LobbyParticipantStatus.ACCEPTED,
+            denied_status=LobbyParticipantStatus.DENIED,
         )
 
     def request_entry(
@@ -289,37 +298,25 @@ class LobbyService:
         participant_id: str,
         allow_entry: bool,
     ) -> None:
-        """Handle decision on participant entry.
+        """Handle decision on participant entry."""
+        state = self._get_decision_state_factory().from_decision(allow_entry)
 
-        Updates participant status based on allow_entry:
-        - If accepted: ACCEPTED status with extended timeout matching LiveKit token
-        - If denied: DENIED status with short timeout allowing status check and retry
-        """
-        if allow_entry:
-            decision = {
-                "status": LobbyParticipantStatus.ACCEPTED,
-                "timeout": settings.LOBBY_ACCEPTED_TIMEOUT,
-            }
-        else:
-            decision = {
-                "status": LobbyParticipantStatus.DENIED,
-                "timeout": settings.LOBBY_DENIED_TIMEOUT,
-            }
-
-        self._update_participant_status(room_id, participant_id, **decision)
+        self._update_participant_status(
+            room_id=room_id,
+            participant_id=participant_id,
+            state=state,
+        )
 
     def _update_participant_status(
         self,
         room_id: UUID,
         participant_id: str,
-        status: LobbyParticipantStatus,
-        timeout: int,
+        state,
     ) -> None:
-        """Update participant status with appropriate timeout."""
-
+        """Update participant status using a lobby participant state."""
         cache_key = self._get_cache_key(room_id, participant_id)
-
         data = cache.get(cache_key)
+
         if not data:
             logger.error("Participant %s not found", participant_id)
             raise LobbyParticipantNotFound("Participant not found")
@@ -328,13 +325,19 @@ class LobbyService:
             participant = LobbyParticipant.from_dict(data)
         except LobbyParticipantParsingError:
             logger.exception(
-                "Removed corrupted data for participant %s:", participant_id
+                "Removed corrupted data for participant %s:",
+                participant_id,
             )
             cache.delete(cache_key)
             raise
 
-        participant.status = status
-        cache.set(cache_key, participant.to_dict(), timeout=timeout)
+        participant = state.apply_to(participant)
+
+        cache.set(
+            cache_key,
+            participant.to_dict(),
+            timeout=state.cache_timeout(),
+        )
 
     def clear_room_cache(self, room_id: UUID) -> None:
         """Clear all participant entries from the cache for a specific room."""
