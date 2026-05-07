@@ -46,7 +46,7 @@ RUN apk update && apk upgrade libssl3 \
     libpng>=1.6.53-r0 \
     musl>=1.2.5-r11 \
     musl-utils>=1.2.5-r11 \
-    nghttp2-libs>=1.68.1 \
+    nghttp2-libs>=1.68.1-r0 \
     zlib>=1.3.2-r0
 
 USER nginx
