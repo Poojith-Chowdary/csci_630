@@ -7,7 +7,7 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- ✨(frontend) remove dead utility files: slugify.ts, capitalize.ts, a11y.ts
+- ✨(frontend) replace custom debounce with useDebounceValue from usehooks-ts
 - Deduplicated posthog ingress version and backend logic via
   named helpers in `_helpers.tpl` (issue #24)
   - Deduplicated ingress admin version and backend logic via
