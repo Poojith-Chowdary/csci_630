@@ -7,6 +7,11 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- ✨(rooms) introduce facade hooks for useRoomContext (issue #55)
+- ✨(frontend) extract PanelToggleButton (issue #54)
+- ✨(frontend) replace custom debounce with usehooks-ts
+- ✨(frontend) extract useRoomSetup facade from Conference
+## [Unreleased]
 
 - ✨(stores) StorageRepository to unify localStorage access (issue #58)
 

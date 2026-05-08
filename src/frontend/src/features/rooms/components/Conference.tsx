@@ -1,17 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   LiveKitRoom,
   usePersistentUserChoices,
 } from '@livekit/components-react'
-import {
-  DisconnectReason,
-  MediaDeviceFailure,
-  Room,
-  RoomOptions,
-  VideoPresets,
-} from 'livekit-client'
+import { DisconnectReason, MediaDeviceFailure } from 'livekit-client'
 import { keys } from '@/api/queryKeys'
 import { queryClient } from '@/api/queryClient'
 import { Screen } from '@/layout/Screen'
@@ -27,8 +21,7 @@ import { BackgroundProcessorFactory } from '../livekit/components/blur'
 import { LocalUserChoices } from '@/stores/userChoices'
 import { MediaDeviceErrorAlert } from './MediaDeviceErrorAlert'
 import { usePostHog } from 'posthog-js/react'
-import { useConfig } from '@/api/useConfig'
-import { isFireFox } from '@/utils/livekit'
+import { useRoomSetup } from '../hooks/useRoomSetup'
 import { useIsMobile } from '@/utils/useIsMobile'
 import { navigateTo } from '@/navigation/navigateTo'
 
@@ -42,7 +35,6 @@ export const Conference = ({
   initialRoomData?: ApiRoom
 }) => {
   const posthog = usePostHog()
-  const { data: apiConfig } = useConfig()
 
   const { userChoices: userConfig } = usePersistentUserChoices() as {
     userChoices: LocalUserChoices
@@ -51,9 +43,8 @@ export const Conference = ({
   useEffect(() => {
     posthog.capture('visit-room', { slug: roomId })
   }, [roomId, posthog])
-  const fetchKey = [keys.room, roomId]
 
-  const [isConnectionWarmedUp, setIsConnectionWarmedUp] = useState(false)
+  const fetchKey = [keys.room, roomId]
 
   const {
     mutateAsync: createRoom,
@@ -72,7 +63,7 @@ export const Conference = ({
   } = useQuery({
     /* eslint-disable @tanstack/query/exhaustive-deps */
     queryKey: fetchKey,
-    staleTime: 6 * 60 * 60 * 1000, // By default, LiveKit access tokens expire 6 hours after generation
+    staleTime: 6 * 60 * 60 * 1000,
     initialData: initialRoomData,
     queryFn: () =>
       fetchRoom({
@@ -86,109 +77,18 @@ export const Conference = ({
     retry: false,
   })
 
-  const roomOptions = useMemo((): RoomOptions => {
-    return {
-      adaptiveStream: true,
-      dynacast: true,
-      publishDefaults: {
-        videoCodec: 'vp9',
-      },
-      videoCaptureDefaults: {
-        deviceId: userConfig.videoDeviceId ?? undefined,
-        resolution: userConfig.videoPublishResolution
-          ? VideoPresets[userConfig.videoPublishResolution].resolution
-          : undefined,
-      },
-      audioCaptureDefaults: {
-        deviceId: userConfig.audioDeviceId ?? undefined,
-      },
-      audioOutput: {
-        deviceId: userConfig.audioOutputDeviceId ?? undefined,
-      },
-    }
-    // do not rely on the userConfig object directly as its reference may change on every render
-  }, [
-    userConfig.videoDeviceId,
-    userConfig.videoPublishResolution,
-    userConfig.audioDeviceId,
-    userConfig.audioOutputDeviceId,
-  ])
-
-  const room = useMemo(() => new Room(roomOptions), [roomOptions])
-
-  useEffect(() => {
-    /**
-     * Warm up connection to LiveKit server before joining room
-     * This prefetch helps reduce initial connection latency by establishing
-     * an early HTTP connection to the WebRTC signaling server
-     *
-     * It should cache DNS and TLS keys.
-     */
-    const prepareConnection = async () => {
-      if (!apiConfig || isConnectionWarmedUp) return
-      await room.prepareConnection(apiConfig.livekit.url)
-
-      if (isFireFox() && apiConfig.livekit.enable_firefox_proxy_workaround) {
-        try {
-          const wssUrl =
-            apiConfig.livekit.url
-              .replace('https://', 'wss://')
-              .replace(/\/$/, '') + '/rtc'
-
-          /**
-           * FIREFOX + PROXY WORKAROUND:
-           *
-           * Issue: On Firefox behind proxy configurations, WebSocket signaling fails to establish.
-           * Symptom: Client receives HTTP 200 instead of expected 101 (Switching Protocols).
-           * Root Cause: Certificate/security issue where the initial request is considered unsecure.
-           *
-           * Solution: Pre-establish a WebSocket connection to the signaling server, which fails.
-           * This "primes" the connection, allowing subsequent WebSocket establishments to work correctly.
-           *
-           * Note: This issue is reproducible on LiveKit's demo app.
-           * Reference: livekit-examples/meet/issues/466
-           */
-          const ws = new WebSocket(wssUrl)
-          // 401 unauthorized response is expected
-          ws.onerror = () => ws.readyState <= 1 && ws.close()
-        } catch (e) {
-          console.debug('Firefox WebSocket workaround failed.', e)
-        }
-      }
-
-      setIsConnectionWarmedUp(true)
-    }
-    prepareConnection()
-  }, [room, apiConfig, isConnectionWarmedUp])
+  const { room, serverUrl, isConnectionWarmedUp } = useRoomSetup(userConfig)
 
   const [showInviteDialog, setShowInviteDialog] = useState(mode === 'create')
   const [mediaDeviceError, setMediaDeviceError] = useState<{
     error: MediaDeviceFailure | null
     kind: MediaDeviceKind | null
-  }>({
-    error: null,
-    kind: null,
-  })
+  }>({ error: null, kind: null })
 
   const isMobile = useIsMobile()
-
-  /*
-   * Ensure stable WebSocket connection URL. This is critical for legacy browser compatibility
-   * (Firefox <124, Chrome <125, Edge <125) where HTTPS URLs in WebSocket() constructor
-   *  may fail - the force_wss_protocol flag allows explicit WSS protocol conversion
-   */
-  const serverUrl = useMemo(() => {
-    const livekit_url = apiConfig?.livekit.url
-    if (!livekit_url) return
-    if (apiConfig?.livekit.force_wss_protocol) {
-      return livekit_url.replace('https://', 'wss://')
-    }
-    return livekit_url
-  }, [apiConfig?.livekit])
-
   const { t } = useTranslation('rooms')
+
   if (isCreateError) {
-    // this error screen should be replaced by a proper waiting room for anonymous user.
     return (
       <ErrorScreen
         title={t('error.createRoom.heading')}
@@ -197,11 +97,9 @@ export const Conference = ({
     )
   }
 
-  // Some clients (like DINUM) operate in bandwidth-constrained environments
-  // These settings help ensure successful connections in poor network conditions
   const connectOptions = {
-    maxRetries: 5, // Default: 1. Only for unreachable server scenarios
-    peerConnectionTimeout: 60000, // Default: 15s. Extended for slow TURN/TLS negotiation
+    maxRetries: 5,
+    peerConnectionTimeout: 60000,
   }
 
   return (
@@ -234,13 +132,7 @@ export const Conference = ({
                 return
               case DisconnectReason.DUPLICATE_IDENTITY:
               case DisconnectReason.PARTICIPANT_REMOVED:
-                navigateTo(
-                  'feedback',
-                  {},
-                  {
-                    state: { reason: e },
-                  }
-                )
+                navigateTo('feedback', {}, { state: { reason: e } })
                 return
             }
           }}
