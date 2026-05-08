@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { usePersistentUserChoices } from './usePersistentUserChoices'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomEventEmitter } from './useRoomEventEmitter'
 import {
   RemoteParticipant,
   RemoteTrackPublication,
@@ -18,7 +18,7 @@ export const useVideoResolutionSubscription = () => {
     userChoices: { videoSubscribeQuality },
   } = usePersistentUserChoices()
 
-  const room = useRoomContext()
+  const room = useRoomEventEmitter()
 
   useEffect(() => {
     if (!room) return

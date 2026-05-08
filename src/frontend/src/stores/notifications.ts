@@ -2,6 +2,7 @@ import { proxy, subscribe } from 'valtio'
 import { proxyMap } from 'valtio/utils'
 import { deserializeToProxyMap, serializeProxyMap } from '@/utils/valtio'
 import { STORAGE_KEYS } from '@/utils/storageKeys'
+import { storageRepository } from '@/utils/StorageRepository'
 import { NotificationType } from '@/features/notifications/NotificationType'
 
 type State = {
@@ -21,39 +22,37 @@ const DEFAULT_STATE: State = {
 }
 
 function getNotificationsState(): State {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS)
-    if (!stored) return DEFAULT_STATE
-    const parsed = JSON.parse(stored, deserializeToProxyMap)
-    // Ensure all default notification types exist in the recovered state
-    return {
-      ...DEFAULT_STATE,
-      ...parsed,
-      soundNotifications: proxyMap(
-        new Map(
-          Array.from(DEFAULT_STATE.soundNotifications.keys()).map((key) => [
-            key,
-            parsed.soundNotifications.has(key)
-              ? parsed.soundNotifications.get(key)
-              : DEFAULT_STATE.soundNotifications.get(key),
-          ])
-        )
-      ),
-    }
-  } catch (error: unknown) {
-    console.error(
-      '[NotificationsStore] Failed to parse stored settings:',
-      error
-    )
-    return DEFAULT_STATE
+  const parsed = storageRepository.load<State | null>(
+    STORAGE_KEYS.NOTIFICATIONS,
+    null,
+    deserializeToProxyMap
+  )
+  if (!parsed) return DEFAULT_STATE
+  // Ensure all default notification types exist in the recovered state
+  return {
+    ...DEFAULT_STATE,
+    ...parsed,
+    soundNotifications: proxyMap(
+      new Map(
+        Array.from(DEFAULT_STATE.soundNotifications.keys()).map((key) => [
+          key,
+          parsed.soundNotifications instanceof Map &&
+          parsed.soundNotifications.has(key)
+            ? (parsed.soundNotifications.get(key) ??
+              DEFAULT_STATE.soundNotifications.get(key)!)
+            : DEFAULT_STATE.soundNotifications.get(key)!,
+        ])
+      )
+    ),
   }
 }
 
 export const notificationsStore = proxy<State>(getNotificationsState())
 
 subscribe(notificationsStore, () => {
-  localStorage.setItem(
+  storageRepository.save(
     STORAGE_KEYS.NOTIFICATIONS,
-    JSON.stringify(notificationsStore, serializeProxyMap)
+    notificationsStore,
+    serializeProxyMap
   )
 })

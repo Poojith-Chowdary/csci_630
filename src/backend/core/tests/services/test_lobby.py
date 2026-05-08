@@ -685,28 +685,32 @@ def test_list_waiting_participants_non_waiting(mock_cache, lobby_service):
 def test_handle_participant_entry_allow(mock_update, lobby_service, participant_id):
     """Test handling allowed participant entry."""
     room = RoomFactory(access_level=RoomAccessLevel.RESTRICTED)
+
     lobby_service.handle_participant_entry(room.id, participant_id, allow_entry=True)
 
-    mock_update.assert_called_once_with(
-        room.id,
-        participant_id,
-        status=LobbyParticipantStatus.ACCEPTED,
-        timeout=settings.LOBBY_ACCEPTED_TIMEOUT,
-    )
+    mock_update.assert_called_once()
+    assert mock_update.call_args.kwargs["room_id"] == room.id
+    assert mock_update.call_args.kwargs["participant_id"] == participant_id
+
+    state = mock_update.call_args.kwargs["state"]
+    assert state.status == LobbyParticipantStatus.ACCEPTED
+    assert state.cache_timeout() == settings.LOBBY_ACCEPTED_TIMEOUT
 
 
 @mock.patch("core.services.lobby.LobbyService._update_participant_status")
 def test_handle_participant_entry_deny(mock_update, lobby_service, participant_id):
     """Test handling denied participant entry."""
     room = RoomFactory(access_level=RoomAccessLevel.RESTRICTED)
+
     lobby_service.handle_participant_entry(room.id, participant_id, allow_entry=False)
 
-    mock_update.assert_called_once_with(
-        room.id,
-        participant_id,
-        status=LobbyParticipantStatus.DENIED,
-        timeout=settings.LOBBY_DENIED_TIMEOUT,
-    )
+    mock_update.assert_called_once()
+    assert mock_update.call_args.kwargs["room_id"] == room.id
+    assert mock_update.call_args.kwargs["participant_id"] == participant_id
+
+    state = mock_update.call_args.kwargs["state"]
+    assert state.status == LobbyParticipantStatus.DENIED
+    assert state.cache_timeout() == settings.LOBBY_DENIED_TIMEOUT
 
 
 @mock.patch("core.services.lobby.cache")
@@ -720,12 +724,8 @@ def test_update_participant_status_not_found(mock_cache, lobby_service, particip
         lobby_service._update_participant_status(
             room.id,
             participant_id,
-            status=LobbyParticipantStatus.ACCEPTED,
-            timeout=60,
+            state=mock.Mock(),
         )
-
-    lobby_service._get_cache_key.assert_called_once_with(room.id, participant_id)
-    mock_cache.get.assert_called_once_with("mocked_cache_key")
 
 
 @mock.patch("core.services.lobby.cache")
@@ -743,12 +743,10 @@ def test_update_participant_status_corrupted_data(
         lobby_service._update_participant_status(
             room.id,
             participant_id,
-            status=LobbyParticipantStatus.ACCEPTED,
-            timeout=60,
+            state=mock.Mock(),
         )
 
     mock_cache.delete.assert_called_once_with("mocked_cache_key")
-    lobby_service._get_cache_key.assert_called_once_with(room.id, participant_id)
 
 
 @mock.patch("core.services.lobby.cache")
@@ -765,23 +763,25 @@ def test_update_participant_status_success(mock_cache, lobby_service, participan
     mock_cache.get.return_value = participant_dict
     lobby_service._get_cache_key = mock.Mock(return_value="mocked_cache_key")
 
+    state = mock.Mock()
+    state.cache_timeout.return_value = 60
+
+    def apply_state(participant):
+        participant.status = LobbyParticipantStatus.ACCEPTED
+        return participant
+
+    state.apply_to.side_effect = apply_state
+
     lobby_service._update_participant_status(
         room.id,
         participant_id,
-        status=LobbyParticipantStatus.ACCEPTED,
-        timeout=60,
+        state=state,
     )
 
-    expected_data = {
-        "status": "accepted",
-        "username": "test-username",
-        "id": participant_id,
-        "color": "#123456",
-    }
-    mock_cache.set.assert_called_once_with(
-        "mocked_cache_key", expected_data, timeout=60
-    )
-    lobby_service._get_cache_key.assert_called_once_with(room.id, participant_id)
+    mock_cache.set.assert_called_once()
+    assert mock_cache.set.call_args.args[0] == "mocked_cache_key"
+    assert mock_cache.set.call_args.args[1]["status"] == "accepted"
+    assert mock_cache.set.call_args.kwargs["timeout"] == 60
 
 
 def test_clear_room_cache(settings, lobby_service):

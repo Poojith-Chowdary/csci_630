@@ -1,6 +1,6 @@
 import { A, Badge, Button, DialogProps, Field, H, P } from '@/primitives'
 import { Trans, useTranslation } from 'react-i18next'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomConnectionActions } from '@/features/rooms/livekit/hooks/useRoomConnectionActions'
 import { useUser } from '@/features/auth'
 import { css } from '@/styled-system/css'
 import { TabPanel, TabPanelProps } from '@/primitives/Tabs'
@@ -15,16 +15,17 @@ export type AccountTabProps = Pick<DialogProps, 'onOpenChange'> &
 export const AccountTab = ({ id, onOpenChange }: AccountTabProps) => {
   const { t } = useTranslation('settings')
   const { saveUsername } = usePersistentUserChoices()
-  const room = useRoomContext()
+  const { setLocalParticipantName, localParticipantName } =
+    useRoomConnectionActions()
   const { user, isLoggedIn, logout } = useUser()
-  const [name, setName] = useState(room?.localParticipant.name ?? '')
+  const [name, setName] = useState(localParticipantName ?? '')
   const userDisplay =
     user?.full_name && user?.email
       ? `${user.full_name} (${user.email})`
       : user?.email
 
   const handleOnSubmit = () => {
-    if (room) room.localParticipant.setName(name)
+    setLocalParticipantName(name)
     saveUsername(name)
     if (onOpenChange) onOpenChange(false)
   }

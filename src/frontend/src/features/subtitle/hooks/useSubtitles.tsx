@@ -2,14 +2,14 @@ import { useSnapshot } from 'valtio'
 import { layoutStore } from '@/stores/layout'
 import { useStartSubtitle } from '../api/startSubtitle'
 import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomEventEmitter } from '@/features/rooms/livekit/hooks/useRoomEventEmitter'
 import { useEffect } from 'react'
 import { RoomEvent } from 'livekit-client'
 
 export const useSubtitles = () => {
   const layoutSnap = useSnapshot(layoutStore)
 
-  const room = useRoomContext()
+  const room = useRoomEventEmitter()
   const apiRoomData = useRoomData()
   const { mutateAsync: startSubtitleRoom, isPending } = useStartSubtitle()
 

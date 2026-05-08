@@ -11,6 +11,14 @@ and this project adheres to
 - ✨(frontend) extract PanelToggleButton (issue #54)
 - ✨(frontend) replace custom debounce with usehooks-ts
 - ✨(frontend) extract useRoomSetup facade from Conference
+## [Unreleased]
+
+- ✨(stores) StorageRepository to unify localStorage access (issue #58)
+
+- ✨(rooms) facade hooks to narrow useRoomContext coupling (issue #55)
+- ✨(frontend) extract PanelToggleButton to eliminate duplicated
+  panel toggle structure (issue #54)
+- ✨(frontend) replace custom debounce with useDebounceValue from usehooks-ts
 - Deduplicated posthog ingress version and backend logic via
   named helpers in `_helpers.tpl` (issue #24)
   - Deduplicated ingress admin version and backend logic via
@@ -32,7 +40,12 @@ and this project adheres to
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
-
+- ♻️ (backend) Move lobby participant decisions into state objects #64
+- ♻️ (backend) Unify participant LiveKit operations with template method #63
+- ♻️ (backend) Consolidate room permission checks with strategies #62
+- ♻️ (backend) Delegate recording save lifecycle rules to state objects #61
+- 🧹 (backend) Build frontend settings through a configuration builder #60
+- ♻️ (backend) Refactor room participant actions behind a facade #59
 - 🧹 (frontend) Resolved code smell #30
 - 🧹 (frontend) Refactor background processor init/state #33
 - 🧹 (frontend) Make `useMediaQuery` SSR-safe and update `matchMedia` #32
