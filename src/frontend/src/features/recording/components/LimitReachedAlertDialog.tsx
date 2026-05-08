@@ -7,7 +7,7 @@ import { NotificationType } from '@/features/notifications'
 import { useIsAdminOrOwner } from '@/features/rooms/livekit/hooks/useIsAdminOrOwner'
 import { RoomEvent } from 'livekit-client'
 import { decodeNotificationDataReceived } from '@/features/notifications/utils'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomEventEmitter } from '@/features/rooms/livekit/hooks/useRoomEventEmitter'
 
 export const LimitReachedAlertDialog = () => {
   const [isAlertOpen, setIsAlertOpen] = useState(false)
@@ -16,7 +16,7 @@ export const LimitReachedAlertDialog = () => {
     keyPrefix: 'recordingStateToast.limitReachedAlert',
   })
 
-  const room = useRoomContext()
+  const room = useRoomEventEmitter()
   const isAdminOrOwner = useIsAdminOrOwner()
   const maxDuration = useHumanizeRecordingMaxDuration()
 

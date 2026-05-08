@@ -1,9 +1,9 @@
-import { useRoomContext } from '@livekit/components-react'
+import { useLocalParticipant } from '@/features/rooms/livekit/hooks/useLocalParticipant'
 import { NotificationType } from '../NotificationType'
 import { NotificationPayload } from '../NotificationPayload'
 
 export const useNotifyParticipants = () => {
-  const room = useRoomContext()
+  const localParticipant = useLocalParticipant()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const notifyParticipants = async <T extends Record<string, any>>(options: {
@@ -27,7 +27,7 @@ export const useNotifyParticipants = () => {
     const encoder = new TextEncoder()
     const data = encoder.encode(JSON.stringify(payload))
 
-    await room.localParticipant.publishData(data, {
+    await localParticipant.publishData(data, {
       reliable,
       destinationIdentities,
     })

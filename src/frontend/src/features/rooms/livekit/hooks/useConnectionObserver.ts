@@ -1,7 +1,5 @@
-import {
-  useRemoteParticipants,
-  useRoomContext,
-} from '@livekit/components-react'
+import { useRemoteParticipants } from '@livekit/components-react'
+import { useRoomEventEmitter } from './useRoomEventEmitter'
 import { useEffect, useRef } from 'react'
 import { DisconnectReason, RoomEvent } from 'livekit-client'
 import { useIsAnalyticsEnabled } from '@/features/analytics/hooks/useIsAnalyticsEnabled'
@@ -12,7 +10,7 @@ import { userPreferencesStore } from '@/stores/userPreferences'
 import { useSnapshot } from 'valtio'
 
 export const useConnectionObserver = () => {
-  const room = useRoomContext()
+  const room = useRoomEventEmitter()
   const connectionStartTimeRef = useRef<number | null>(null)
 
   const { data } = useConfig()

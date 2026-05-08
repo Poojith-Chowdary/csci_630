@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { RiHand } from '@remixicon/react'
 import { ToggleButton } from '@/primitives'
 import { css } from '@/styled-system/css'
-import { useRoomContext } from '@livekit/components-react'
+import { useLocalParticipant } from '../../hooks/useLocalParticipant'
 import { useRaisedHand } from '@/features/rooms/livekit/hooks/useRaisedHand'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -15,12 +15,12 @@ const SPEAKING_DETECTION_DELAY = 3000
 export const HandToggle = () => {
   const { t } = useTranslation('rooms', { keyPrefix: 'controls.hand' })
 
-  const room = useRoomContext()
+  const localParticipant = useLocalParticipant()
   const { isHandRaised, toggleRaisedHand } = useRaisedHand({
-    participant: room.localParticipant,
+    participant: localParticipant,
   })
 
-  const isSpeaking = room.localParticipant.isSpeaking
+  const isSpeaking = localParticipant.isSpeaking
   const speakingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [hasShownToast, setHasShownToast] = useState(false)
 
@@ -43,7 +43,7 @@ export const HandToggle = () => {
           if (isHandRaised) toggleRaisedHand()
           resetToastState()
         }
-        showLowerHandToast(room.localParticipant, onClose)
+        showLowerHandToast(localParticipant, onClose)
       }, SPEAKING_DETECTION_DELAY)
     }
     if ((!isSpeaking || !isHandRaised) && speakingTimerRef.current) {
