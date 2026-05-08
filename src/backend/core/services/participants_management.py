@@ -41,39 +41,34 @@ class ParticipantsManagement:
     @async_to_sync
     async def mute(self, room_name: str, identity: str, track_sid: str):
         """Mute a specific audio or video track for a participant in a room."""
-        lkapi = utils.create_livekit_client()
+        request = MuteRoomTrackRequest(
+            room=room_name,
+            identity=identity,
+            track_sid=track_sid,
+            muted=True,
+        )
 
-        try:
-            await lkapi.room.mute_published_track(
-                MuteRoomTrackRequest(
-                    room=room_name,
-                    identity=identity,
-                    track_sid=track_sid,
-                    muted=True,
-                )
-            )
+        async def operation(lkapi):
+            await lkapi.room.mute_published_track(request)
 
-        except TwirpError as e:
-            status_code = 404 if getattr(e, "status", None) == 404 else 500
-            raise ParticipantsManagementException(
-                "Could not mute participant", status_code=status_code
-            ) from e
-
-        finally:
-            await lkapi.aclose()
+        await self._execute_livekit_participant_operation(
+            operation,
+            error_message="Could not mute participant",
+        )
 
     @async_to_sync
     async def remove(self, room_name: str, identity: str):
         """Remove a participant from a room and clear their lobby cache.
 
-        LiveKit returns a TwirpError with status 404 when the participant/room
-        is not found. We propagate this as a ParticipantsManagementException
-        with status_code=404 so the API can return HTTP 404 instead of 500.
+        LiveKit returns a TwirpError with status 404 when the participant/room is
+        not found. We propagate this as a ParticipantsManagementException with
+        status_code=404 so the API can return HTTP 404 instead of 500.
         """
         # Best-effort lobby cache cleanup (do not fail removal if room_name isn't a UUID)
         try:
             LobbyService().clear_participant_cache(
-                room_id=uuid.UUID(room_name), participant_id=identity
+                room_id=uuid.UUID(room_name),
+                participant_id=identity,
             )
         except (ValueError, TypeError) as exc:
             logger.warning(
@@ -83,21 +78,15 @@ class ParticipantsManagement:
                 exc_info=exc,
             )
 
-        lkapi = utils.create_livekit_client()
+        request = RoomParticipantIdentity(room=room_name, identity=identity)
 
-        try:
-            await lkapi.room.remove_participant(
-                RoomParticipantIdentity(room=room_name, identity=identity)
-            )
+        async def operation(lkapi):
+            await lkapi.room.remove_participant(request)
 
-        except TwirpError as e:
-            status_code = 404 if getattr(e, "status", None) == 404 else 500
-            raise ParticipantsManagementException(
-                "Could not remove participant", status_code=status_code
-            ) from e
-
-        finally:
-            await lkapi.aclose()
+        await self._execute_livekit_participant_operation(
+            operation,
+            error_message="Could not remove participant",
+        )
 
     @async_to_sync
     async def update(
@@ -110,25 +99,38 @@ class ParticipantsManagement:
         name: Optional[str] = None,
     ):
         """Update participant properties such as metadata, attributes, permissions, or name."""
+        request = UpdateParticipantRequest(
+            room=room_name,
+            identity=identity,
+            metadata=json.dumps(metadata),
+            permission=permission,
+            attributes=attributes,
+            name=name,
+        )
+
+        async def operation(lkapi):
+            await lkapi.room.update_participant(request)
+
+        await self._execute_livekit_participant_operation(
+            operation,
+            error_message="Could not update participant",
+        )
+
+    async def _execute_livekit_participant_operation(
+        self,
+        operation,
+        *,
+        error_message: str,
+    ):
+        """Execute a LiveKit participant operation with shared lifecycle handling."""
         lkapi = utils.create_livekit_client()
-
         try:
-            await lkapi.room.update_participant(
-                UpdateParticipantRequest(
-                    room=room_name,
-                    identity=identity,
-                    metadata=json.dumps(metadata),
-                    permission=permission,
-                    attributes=attributes,
-                    name=name,
-                )
-            )
-
-        except TwirpError as e:
-            status_code = 404 if getattr(e, "status", None) == 404 else 500
+            await operation(lkapi)
+        except TwirpError as exc:
+            status_code = 404 if getattr(exc, "status", None) == 404 else 500
             raise ParticipantsManagementException(
-                "Could not update participant", status_code=status_code
-            ) from e
-
+                error_message,
+                status_code=status_code,
+            ) from exc
         finally:
             await lkapi.aclose()
