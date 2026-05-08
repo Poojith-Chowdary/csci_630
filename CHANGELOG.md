@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+- ✨(stores) StorageRepository to unify localStorage access (issue #58)
+
 - ✨(rooms) facade hooks to narrow useRoomContext coupling (issue #55)
 - ✨(frontend) extract PanelToggleButton to eliminate duplicated
   panel toggle structure (issue #54)

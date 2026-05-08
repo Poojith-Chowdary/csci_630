@@ -1,6 +1,7 @@
 import { proxy, subscribe } from 'valtio'
 import { STORAGE_KEYS } from '@/utils/storageKeys'
 import { deserializeToProxyMap } from '@/utils/valtio'
+import { storageRepository } from '@/utils/StorageRepository'
 
 type AccessibilityState = {
   announceReactions: boolean
@@ -11,57 +12,38 @@ const DEFAULT_STATE: AccessibilityState = {
 }
 
 function getAccessibilityState(): AccessibilityState {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEYS.ACCESSIBILITY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      return {
-        ...DEFAULT_STATE,
-        ...parsed,
-        announceReactions:
-          typeof parsed.announceReactions === 'boolean'
-            ? parsed.announceReactions
-            : DEFAULT_STATE.announceReactions,
-      }
+  const stored = storageRepository.load<AccessibilityState | null>(
+    STORAGE_KEYS.ACCESSIBILITY,
+    null
+  )
+  if (stored) {
+    return {
+      ...DEFAULT_STATE,
+      ...stored,
+      announceReactions:
+        typeof stored.announceReactions === 'boolean'
+          ? stored.announceReactions
+          : DEFAULT_STATE.announceReactions,
     }
-
-    // Legacy migration: if the setting was previously stored in notifications
-    const legacy = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS)
-    if (legacy) {
-      try {
-        const parsedLegacy = JSON.parse(legacy, deserializeToProxyMap)
-        if (typeof parsedLegacy?.announceReactions === 'boolean') {
-          const migratedState: AccessibilityState = {
-            ...DEFAULT_STATE,
-            ...parsedLegacy,
-            announceReactions: parsedLegacy.announceReactions,
-          }
-
-          try {
-            localStorage.setItem(
-              STORAGE_KEYS.ACCESSIBILITY,
-              JSON.stringify(migratedState)
-            )
-            localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS)
-          } catch {
-            // ignore persistence issues during migration
-          }
-
-          return migratedState
-        }
-      } catch {
-        // ignore legacy parsing issues
-      }
-    }
-
-    return DEFAULT_STATE
-  } catch (error: unknown) {
-    console.error(
-      '[AccessibilityStore] Failed to parse stored settings:',
-      error
-    )
-    return DEFAULT_STATE
   }
+
+  // Legacy migration: if the setting was previously stored in notifications
+  const legacy = storageRepository.load<Record<string, unknown> | null>(
+    STORAGE_KEYS.NOTIFICATIONS,
+    null,
+    deserializeToProxyMap
+  )
+  if (legacy && typeof legacy?.announceReactions === 'boolean') {
+    const migratedState: AccessibilityState = {
+      ...DEFAULT_STATE,
+      announceReactions: legacy.announceReactions as boolean,
+    }
+    storageRepository.save(STORAGE_KEYS.ACCESSIBILITY, migratedState)
+    storageRepository.remove(STORAGE_KEYS.NOTIFICATIONS)
+    return migratedState
+  }
+
+  return DEFAULT_STATE
 }
 
 export const accessibilityStore = proxy<AccessibilityState>(
@@ -69,8 +51,5 @@ export const accessibilityStore = proxy<AccessibilityState>(
 )
 
 subscribe(accessibilityStore, () => {
-  localStorage.setItem(
-    STORAGE_KEYS.ACCESSIBILITY,
-    JSON.stringify(accessibilityStore)
-  )
+  storageRepository.save(STORAGE_KEYS.ACCESSIBILITY, accessibilityStore)
 })

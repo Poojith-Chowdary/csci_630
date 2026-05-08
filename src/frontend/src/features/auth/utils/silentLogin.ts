@@ -1,9 +1,12 @@
 import { authUrl } from '@/features/auth'
-
-const SILENT_LOGIN_RETRY_KEY = 'silent-login-retry'
+import { STORAGE_KEYS } from '@/utils/storageKeys'
+import { storageRepository } from '@/utils/StorageRepository'
 
 const isRetryAllowed = () => {
-  const lastRetryDate = localStorage.getItem(SILENT_LOGIN_RETRY_KEY)
+  const lastRetryDate = storageRepository.load<string | null>(
+    STORAGE_KEYS.SILENT_LOGIN_RETRY,
+    null
+  )
   if (!lastRetryDate) {
     return true
   }
@@ -14,7 +17,7 @@ const isRetryAllowed = () => {
 const setNextRetryTime = (retryIntervalInSeconds: number) => {
   const now = new Date()
   const nextRetryTime = now.getTime() + retryIntervalInSeconds * 1000
-  localStorage.setItem(SILENT_LOGIN_RETRY_KEY, String(nextRetryTime))
+  storageRepository.save(STORAGE_KEYS.SILENT_LOGIN_RETRY, String(nextRetryTime))
 }
 
 const initiateSilentLogin = () => {
