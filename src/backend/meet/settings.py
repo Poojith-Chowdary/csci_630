@@ -26,6 +26,8 @@ from lasuite.configuration.values import SecretFileValue
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
+from meet.configuration_builders import build_frontend_configuration
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 
@@ -318,48 +320,7 @@ class Base(Configuration):
     }
 
     # Frontend
-    FRONTEND_CONFIGURATION = {
-        # If set, a <link> tag with this URL as href is added to the <head> of the frontend app.
-        # This is useful if you want to change CSS variables to customize the look of the app.
-        "custom_css_url": values.Value(
-            None, environ_name="FRONTEND_CUSTOM_CSS_URL", environ_prefix=None
-        ),
-        "analytics": values.DictValue(
-            {}, environ_name="FRONTEND_ANALYTICS", environ_prefix=None
-        ),
-        "support": values.DictValue(
-            {}, environ_name="FRONTEND_SUPPORT", environ_prefix=None
-        ),
-        "silence_livekit_debug_logs": values.BooleanValue(
-            False, environ_name="FRONTEND_SILENCE_LIVEKIT_DEBUG", environ_prefix=None
-        ),
-        "is_silent_login_enabled": values.BooleanValue(
-            True, environ_name="FRONTEND_IS_SILENT_LOGIN_ENABLED", environ_prefix=None
-        ),
-        "idle_disconnect_warning_delay": values.PositiveIntegerValue(
-            None,
-            environ_name="FRONTEND_IDLE_DISCONNECT_WARNING_DELAY",
-            environ_prefix=None,
-        ),
-        "feedback": values.DictValue(
-            {}, environ_name="FRONTEND_FEEDBACK", environ_prefix=None
-        ),
-        "external_home_url": values.Value(
-            None, environ_name="FRONTEND_EXTERNAL_HOME_URL", environ_prefix=None
-        ),
-        "use_french_gov_footer": values.BooleanValue(
-            False, environ_name="FRONTEND_USE_FRENCH_GOV_FOOTER", environ_prefix=None
-        ),
-        "use_proconnect_button": values.BooleanValue(
-            False, environ_name="FRONTEND_USE_PROCONNECT_BUTTON", environ_prefix=None
-        ),
-        "manifest_link": values.Value(
-            None, environ_name="FRONTEND_MANIFEST_LINK", environ_prefix=None
-        ),
-        "transcription_destination": values.Value(
-            None, environ_name="FRONTEND_TRANSCRIPTION_DESTINATION", environ_prefix=None
-        ),
-    }
+    FRONTEND_CONFIGURATION = build_frontend_configuration()
 
     # Mail
     EMAIL_BACKEND = values.Value("django.core.mail.backends.smtp.EmailBackend")

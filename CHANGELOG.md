@@ -31,7 +31,7 @@ and this project adheres to
 - 🔒️(tests) Add migration/schema safety regression test #5
 
 ### Changed
-
+- 🧹 (backend) Build frontend settings through a configuration builder #60
 - ♻️ (backend) Refactor room participant actions behind a facade #59
 - 🧹 (frontend) Resolved code smell #30
 - 🧹 (frontend) Refactor background processor init/state #33
